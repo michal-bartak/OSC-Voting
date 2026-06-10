@@ -18,12 +18,17 @@ OSC Vote is a multiplatform desktop app (macOS/Linux/Windows) built with Wails v
 - SoundCloud: HTML5 Widget API (per-song iframes, postMessage events)
 
 **Key commands:**
-```bash
-cd /Users/michalbartak/GitRepo/osc
+```powershell
+# Windows (current):
+cd O:\GitRepo\OSC-Votes
 wails dev                              # dev mode with hot reload
-wails build -platform darwin/universal # release build (macOS fat binary)
 wails build -platform windows/amd64
-wails build -platform linux/amd64
+
+# macOS (previous):
+# cd /Users/michalbartak/GitRepo/osc
+# wails dev
+# wails build -platform darwin/universal
+# wails build -platform linux/amd64
 ```
 
 Output binary: `build/bin/OSC Vote.app` (macOS), `build/bin/OSC Vote.exe` (Windows)

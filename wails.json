@@ -8,7 +8,7 @@
   "frontend:dev:serverUrl": "auto",
   "info": {
     "productName": "OSC Vote",
-    "productVersion": "1.0.0",
+    "productVersion": "0.1.0",
     "copyright": "© Michal Bartak"
   },
   "author": {
