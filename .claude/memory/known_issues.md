@@ -92,6 +92,24 @@ $bw.Dispose(); $stream.Dispose(); Write-Host "Done"
 
 **Note:** macOS (.icns) and Linux are generated automatically by Wails from `appicon.png` at build time — no manual step needed.
 
+## Sorting iframes: use CSS `order`, not DOM reorder
+
+**Problem:** Changing sort order via React re-render (reordering array in `.map()`) moves iframe DOM nodes, causing browsers to reload them — SoundCloud widgets would restart from scratch on every sort change.
+
+**Fix:** Keep DOM order stable (always iterate the unsorted `songs` array). Derive a `sortPositions: Map<id, index>` from the sorted array and apply `style={{ order: sortPositions.get(song.id) }}` to a wrapper div around each item. The flex container (`display: flex; flex-direction: column`) reorders visually without touching the DOM.
+
+**Pattern:**
+```tsx
+// stable DOM order — no iframe reloads
+{songs.map(song => (
+  <div key={song.id} style={{ order: sortPositions.get(song.id) ?? 0 }}>
+    <SongItem ... />
+  </div>
+))}
+```
+
+Applies to any component containing iframes, videos, or other expensive browser-managed elements.
+
 ## Wails dev hot-reload and Go type changes
 
 When Go structs change (e.g. adding fields to Config), `wails dev` auto-regenerates `models.ts` immediately. No manual sync needed. However, if TypeScript code references the new fields before regeneration, there will be a brief TS error. Safe to ignore — it resolves on next hot reload.

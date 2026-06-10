@@ -22,6 +22,10 @@ const SongItem = forwardRef<SongItemHandle, Props>(
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const widgetRef = useRef<SCWidget | null>(null);
     const positionRef = useRef(0);
+    const onPlayRef = useRef(onPlay);
+    onPlayRef.current = onPlay;
+    const onFinishRef = useRef(onFinish);
+    onFinishRef.current = onFinish;
     const [voteError, setVoteError] = useState('');
     const [voting, setVoting] = useState(false);
     const prevVoteRef = useRef(song.currentVote);
@@ -37,8 +41,8 @@ const SongItem = forwardRef<SongItemHandle, Props>(
       widgetRef.current = widget;
       positionRef.current = 0;
 
-      widget.bind(window.SC.Widget.Events.PLAY, () => onPlay(song.id));
-      widget.bind(window.SC.Widget.Events.FINISH, () => onFinish(song.id));
+      widget.bind(window.SC.Widget.Events.PLAY,   () => onPlayRef.current(song.id));
+      widget.bind(window.SC.Widget.Events.FINISH, () => onFinishRef.current(song.id));
       widget.bind(window.SC.Widget.Events.PLAY_PROGRESS, (data: unknown) => {
         const d = data as { currentPosition?: number };
         if (typeof d?.currentPosition === 'number') {

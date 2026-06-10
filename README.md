@@ -9,7 +9,10 @@ A desktop app for voting in the [One Synth Challenge](https://onesynthchallenge.
 ## Features
 
 - **Inline playback** — SoundCloud player embedded per song, no browser switching
+- **Transport controls** — play/pause, stop, previous and next buttons in a bottom bar
+- **Keyboard shortcut** — Space bar toggles play/pause
 - **Auto-advance** — next song starts automatically when the current one ends
+- **Sort songs** — order by default, votes (high/low), or title A–Z
 - **Vote buttons** — 1–5 points inline; click the active score again to clear the vote
 - **Timed comments** — 💬 button opens the SC track in your browser at the exact timestamp you're listening at
 - **Auto-scroll** — scrolls to the first unvoted song on load (toggle in options)

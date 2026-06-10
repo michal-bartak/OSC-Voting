@@ -382,6 +382,106 @@ body { background: var(--bg-base); margin: 0; }
 /* ── Vote Error ─────────────────────────────────────────── */
 .vote-error { font-size: 11px; color: var(--error); margin: -4px 0 4px; }
 
+/* ── Bottom Bar ─────────────────────────────────────────── */
+.bottom-bar {
+  height: 56px;
+  background: var(--bg-header);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.transport-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.transport-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+}
+.transport-btn:hover:not(:disabled) { color: var(--text-primary); background: var(--bg-input); }
+.transport-btn:disabled { opacity: 0.3; cursor: default; }
+
+.transport-btn--play-pause {
+  color: #fff;
+  background: var(--accent);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+}
+.transport-btn--play-pause:hover:not(:disabled) { background: var(--accent-hover); }
+
+.bar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.now-playing {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.now-playing-label {
+  font-size: 10px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+.now-playing-title {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.now-playing-title--empty { color: var(--text-faint); font-style: italic; }
+
+.sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.sort-label {
+  font-size: 11px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.sort-select {
+  background: var(--bg-input);
+  border: 1px solid var(--border-btn);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 4px 8px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+.sort-select:hover { border-color: var(--border-hover); color: var(--text-secondary); }
+.sort-select:focus { border-color: var(--accent); }
+
 /* ── SC iframe ──────────────────────────────────────────── */
 /* background-color shows through once the injected script makes the SC player transparent. */
 .sc-iframe {

@@ -1,8 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ApplySCTheme, GetConfig, GetSongs, Logout } from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
+import BottomBar from './BottomBar';
 import SettingsPopup from './SettingsPopup';
 import SongItem, { SongItemHandle } from './SongItem';
+
+export type SortOrder = 'id' | 'vote-desc' | 'vote-asc' | 'title';
 
 interface Props {
   onLogout: () => void;
@@ -19,6 +22,8 @@ export default function VotingPage({ onLogout }: Props) {
   const [songs, setSongs] = useState<main.Song[]>([]);
   const [challengeNumber, setChallengeNumber] = useState(0);
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const [sortOrder, setSortOrder] = useState<SortOrder>('id');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [autoScroll, setAutoScroll] = useState(false);
@@ -30,6 +35,22 @@ export default function VotingPage({ onLogout }: Props) {
     () => document.documentElement.getAttribute('data-theme') === 'dark'
   );
   const songRefs = useRef<Record<string, SongItemHandle>>({});
+
+  const sortedSongs = useMemo(() => {
+    const copy = [...songs];
+    switch (sortOrder) {
+      case 'vote-desc': return copy.sort((a, b) => b.currentVote - a.currentVote);
+      case 'vote-asc':  return copy.sort((a, b) => a.currentVote - b.currentVote);
+      case 'title':     return copy.sort((a, b) => a.title.localeCompare(b.title));
+      default:          return copy;
+    }
+  }, [songs, sortOrder]);
+
+  const sortPositions = useMemo(() => {
+    const map = new Map<string, number>();
+    sortedSongs.forEach((s, i) => map.set(s.id, i));
+    return map;
+  }, [sortedSongs]);
 
   // Track data-theme changes (set by applyTheme()) to keep isDark in sync.
   useEffect(() => {
@@ -67,17 +88,68 @@ export default function VotingPage({ onLogout }: Props) {
       songRefs.current[playingId]?.pause();
     }
     setPlayingId(id);
+    setIsPaused(false);
   };
 
   const handleFinish = (id: string) => {
-    const idx = songs.findIndex(s => s.id === id);
-    const next = songs[idx + 1];
+    const idx = sortedSongs.findIndex(s => s.id === id);
+    const next = sortedSongs[idx + 1];
     if (next) {
       setPlayingId(next.id);
+      setIsPaused(false);
       setTimeout(() => songRefs.current[next.id]?.play(), 100);
     } else {
       setPlayingId(null);
+      setIsPaused(false);
     }
+  };
+
+  const handlePause = () => {
+    if (!playingId) return;
+    songRefs.current[playingId]?.pause();
+    setIsPaused(true);
+  };
+
+  const handleResume = () => {
+    if (!playingId) return;
+    songRefs.current[playingId]?.play();
+    setIsPaused(false);
+  };
+
+  const handleStop = () => {
+    if (playingId) songRefs.current[playingId]?.pause();
+    setPlayingId(null);
+    setIsPaused(false);
+  };
+
+  const handlePlayFirst = () => {
+    const first = sortedSongs[0];
+    if (!first) return;
+    setPlayingId(first.id);
+    setIsPaused(false);
+    setTimeout(() => songRefs.current[first.id]?.play(), 100);
+  };
+
+  const handlePrev = () => {
+    if (!playingId) return;
+    const idx = sortedSongs.findIndex(s => s.id === playingId);
+    const prev = sortedSongs[idx - 1];
+    if (!prev) return;
+    songRefs.current[playingId]?.pause();
+    setPlayingId(prev.id);
+    setIsPaused(false);
+    setTimeout(() => songRefs.current[prev.id]?.play(), 100);
+  };
+
+  const handleNext = () => {
+    if (!playingId) return;
+    const idx = sortedSongs.findIndex(s => s.id === playingId);
+    const next = sortedSongs[idx + 1];
+    if (!next) return;
+    songRefs.current[playingId]?.pause();
+    setPlayingId(next.id);
+    setIsPaused(false);
+    setTimeout(() => songRefs.current[next.id]?.play(), 100);
   };
 
   const handleVote = (id: string, points: number) => {
@@ -85,6 +157,21 @@ export default function VotingPage({ onLogout }: Props) {
       prev.map(s => (s.id === id ? main.Song.createFrom({ ...s, currentVote: points }) : s))
     );
   };
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code !== 'Space') return;
+      const tag = (e.target as HTMLElement).tagName;
+      if (['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT'].includes(tag)) return;
+      if (settingsOpen) return;
+      e.preventDefault();
+      if (!playingId && !isPaused) handlePlayFirst();
+      else if (isPaused)           handleResume();
+      else                         handlePause();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [playingId, isPaused, sortedSongs, settingsOpen]);
 
   const handleLogout = async () => {
     await Logout();
@@ -106,6 +193,10 @@ export default function VotingPage({ onLogout }: Props) {
 
   const voted = songs.filter(s => s.currentVote > 0).length;
   const total = songs.length;
+  const currentIdx = playingId ? sortedSongs.findIndex(s => s.id === playingId) : -1;
+  const hasPrev = currentIdx > 0;
+  const hasNext = currentIdx >= 0 && currentIdx < sortedSongs.length - 1;
+  const playingTitle = playingId ? (sortedSongs.find(s => s.id === playingId)?.title ?? null) : null;
 
   return (
     <div className="voting-page">
@@ -149,21 +240,35 @@ export default function VotingPage({ onLogout }: Props) {
       )}
       <div className="song-list">
         {songs.map(song => (
-          <SongItem
-            key={song.id}
-            song={song}
-            isPlaying={playingId === song.id}
-            isDark={isDark}
-            onPlay={handlePlay}
-            onFinish={handleFinish}
-            onVote={handleVote}
-            ref={el => {
-              if (el) songRefs.current[song.id] = el;
-              else delete songRefs.current[song.id];
-            }}
-          />
+          <div key={song.id} style={{ order: sortPositions.get(song.id) ?? 0 }}>
+            <SongItem
+              song={song}
+              isPlaying={playingId === song.id}
+              isDark={isDark}
+              onPlay={handlePlay}
+              onFinish={handleFinish}
+              onVote={handleVote}
+              ref={el => {
+                if (el) songRefs.current[song.id] = el;
+                else delete songRefs.current[song.id];
+              }}
+            />
+          </div>
         ))}
       </div>
+      <BottomBar
+        playingTitle={playingTitle}
+        isPaused={isPaused}
+        sortOrder={sortOrder}
+        hasPrev={hasPrev}
+        hasNext={hasNext}
+        onPlay={isPaused ? handleResume : handlePlayFirst}
+        onPause={handlePause}
+        onStop={handleStop}
+        onPrev={handlePrev}
+        onNext={handleNext}
+        onSortChange={setSortOrder}
+      />
     </div>
   );
 }
