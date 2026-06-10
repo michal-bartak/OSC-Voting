@@ -1,0 +1,66 @@
+---
+name: ui-decisions
+description: "Design decisions, component patterns, CSS conventions, and UX choices"
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: 19358bd9-1049-44e2-98d1-de520d816356
+---
+
+## Visual design
+
+- Dark theme throughout: background `#111`/`#1a1a1a`/`#1e1e1e`, borders `#2a2a2a`/`#333`
+- Accent color: `#ff5500` (SoundCloud orange) for active states, hover effects, focus rings
+- Text: `#fff` (primary), `#ddd` (secondary), `#888` (muted), `#666` (very muted)
+- Error color: `#ff6b6b`
+- Border radius: 6–12px; cards use 12px, buttons use 5–6px
+
+## SC iframe height
+
+Fixed at `height="120"` — the compact SC embed (visual=false) needs exactly this to show the waveform without extra whitespace. Do not use `visual=true` — it would be too tall.
+
+## Vote buttons
+
+1–5 inline buttons per song. Clicking the active score again resets to 0 (unvote). Optimistic update in React state with revert on network error.
+
+## Comment button
+
+💬 emoji button, 30×30px, same row as vote buttons. Opens SC track page at current timestamp in system browser.
+
+## Song list scroll
+
+Uses native browser scroll on a flex column. `scrollToFirstUnvoted()` uses `scrollIntoView({ behavior: 'smooth', block: 'center' })` targeting `#song-item-{id}`.
+
+## Currently-playing highlight
+
+`.song-item--playing` class: left border `3px solid #ff5500`, slightly warm background `#1f1a18`, title color `#ff7733`.
+
+## Header layout
+
+```
+[OSC Voting] [Challenge #N]          [Auto-scroll ☐] [X/Y voted] [⚙] [Log out]
+```
+
+Auto-scroll checkbox is operational (not a setting per se), kept in the header. ⚙ opens the Account modal for credentials.
+
+## Modal (SettingsPopup)
+
+- Full-screen overlay `rgba(0,0,0,0.6)` at z-index 100
+- Click outside to dismiss; Escape key to dismiss
+- 360px centered card, same visual style as login card
+- Two-button footer: Cancel (secondary) + Save (primary orange)
+- Inline error below password field, same as LoginPage
+
+## App icon
+
+Custom 1024×1024 PNG at `build/appicon.png`: dark `#1a1a1a` rounded square, 5 orange `#ff5500` equalizer bars of varying heights + 5 small dots underneath. Generated with Python/Pillow.
+
+## Wails window
+
+Title: `"OSC Vote v" + appVersion` (from VERSION file)
+Size: 1200×820, min 900×600
+Background: `rgba(18, 18, 18, 1)` to avoid white flash on load
+
+## Auto-scroll feature
+
+Config-backed checkbox in header. On load, if enabled, waits 150ms then scrolls to first unvoted song. Also scrolls on checkbox enable. Does NOT scroll on every vote.
