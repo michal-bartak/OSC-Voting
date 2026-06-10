@@ -33,7 +33,7 @@ wails build -platform windows/amd64
 
 Output binary: `build/bin/OSC Vote.app` (macOS), `build/bin/OSC Vote.exe` (Windows)
 
-**Version:** Tracked in `VERSION` file, embedded at compile time via `//go:embed VERSION` in `version.go`. Currently 0.1.0. Shown in window title bar.
+**Version:** Tracked in `VERSION` file, embedded at compile time via `//go:embed VERSION` in `version.go`. Currently 0.1.1. Shown in window title bar. `wails.json` `productVersion` is kept in sync manually for local dev; CI auto-syncs it via `jq` step before `wails build`.
 
 **Config/session storage:** `~/.config/osc/` (0o600 permissions)
 - `session.json` — persisted session cookie

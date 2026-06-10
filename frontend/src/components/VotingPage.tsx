@@ -116,8 +116,16 @@ export default function VotingPage({ onLogout }: Props) {
         </div>
         <div className="header-right">
           <span className="vote-progress">{voted}/{total} voted</span>
-          <button className="settings-btn" onClick={() => setSettingsOpen(true)} title="Settings">⚙</button>
-          <button className="logout-btn" onClick={handleLogout}>Log out</button>
+          <button className="settings-btn" onClick={() => setSettingsOpen(true)} title="Settings">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <line x1="2" y1="4" x2="14" y2="4"/>
+              <line x1="2" y1="8" x2="14" y2="8"/>
+              <line x1="2" y1="12" x2="14" y2="12"/>
+              <circle cx="10" cy="4" r="1.75" fill="currentColor" stroke="none"/>
+              <circle cx="5" cy="8" r="1.75" fill="currentColor" stroke="none"/>
+              <circle cx="11" cy="12" r="1.75" fill="currentColor" stroke="none"/>
+            </svg>
+          </button>
         </div>
       </header>
       {settingsOpen && (

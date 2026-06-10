@@ -32,6 +32,6 @@ Michal Bartak (michal.bartak@betsys.com) is building OSC Vote as a personal tool
 - Participates in One Synth Challenge (onesynthchallenge.org) — electronic music production competition
 
 **Project context:**
-- Personal tool, single-user, macOS primary target (also Linux/Windows)
+- Personal tool, single-user; developed on macOS, now primary dev machine is Windows
 - Votes on ~20 SoundCloud tracks per challenge round
 - Wants to add timed comments to tracks while listening
