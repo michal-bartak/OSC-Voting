@@ -63,6 +63,35 @@ if idx := strings.Index(trackURL, "?"); idx != -1 {
 
 Use `#t={mins}m{secs:02d}s` (fragment, SC's timed-comment anchor format) rather than `?t={secs}` (query param). The query param format was used initially but `#t=` is SC's canonical timed-comment deeplink format.
 
+## Windows icon.ico must be manually regenerated from appicon.png
+
+**Problem:** Wails does NOT auto-generate `build/windows/icon.ico` from `build/appicon.png`. If `appicon.png` is replaced with a new custom icon, the `.ico` stays as the old/default Wails icon until manually regenerated. The Windows `.exe` gets its embedded icon from `icon.ico`, not `appicon.png`.
+
+**Fix:** Regenerate with PowerShell (run from repo root):
+```powershell
+Add-Type -AssemblyName System.Drawing
+$sourcePath = "build\appicon.png"; $targetPath = "build\windows\icon.ico"; $sizes = @(256,128,64,48,32,16)
+$source = [System.Drawing.Image]::FromFile((Resolve-Path $sourcePath)); $images = @()
+foreach ($size in $sizes) {
+    $bmp = [System.Drawing.Bitmap]::new($size,$size,[System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+    $g = [System.Drawing.Graphics]::FromImage($bmp)
+    $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+    $g.DrawImage($source,0,0,$size,$size); $g.Dispose()
+    $ms = [System.IO.MemoryStream]::new(); $bmp.Save($ms,[System.Drawing.Imaging.ImageFormat]::Png)
+    $images += ,$ms.ToArray(); $ms.Dispose(); $bmp.Dispose()
+}
+$source.Dispose()
+$stream = [System.IO.MemoryStream]::new(); $bw = [System.IO.BinaryWriter]::new($stream)
+$bw.Write([uint16]0); $bw.Write([uint16]1); $bw.Write([uint16]$sizes.Count)
+$offset = [uint32](6 + $sizes.Count * 16)
+for ($i=0;$i -lt $sizes.Count;$i++) { $d=$sizes[$i]; $bw.Write([byte]$(if($d-ge 256){0}else{$d})); $bw.Write([byte]$(if($d-ge 256){0}else{$d})); $bw.Write([byte]0);$bw.Write([byte]0);$bw.Write([uint16]1);$bw.Write([uint16]32);$bw.Write([uint32]$images[$i].Length);$bw.Write($offset);$offset+=[uint32]$images[$i].Length }
+foreach ($img in $images){$bw.Write($img)}; $bw.Flush()
+[System.IO.File]::WriteAllBytes((Resolve-Path $targetPath -ErrorAction SilentlyContinue ?? $targetPath),$stream.ToArray())
+$bw.Dispose(); $stream.Dispose(); Write-Host "Done"
+```
+
+**Note:** macOS (.icns) and Linux are generated automatically by Wails from `appicon.png` at build time — no manual step needed.
+
 ## Wails dev hot-reload and Go type changes
 
 When Go structs change (e.g. adding fields to Config), `wails dev` auto-regenerates `models.ts` immediately. No manual sync needed. However, if TypeScript code references the new fields before regeneration, there will be a brief TS error. Safe to ignore — it resolves on next hot reload.
