@@ -45,7 +45,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             platform: linux/amd64
             goos: linux
           - os: windows-latest
@@ -76,7 +76,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
-            libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
+            libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
 
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0
@@ -92,11 +92,18 @@ jobs:
           $out = "OSC-Vote-v${version}-windows-amd64.zip"
           Compress-Archive -Path "build\bin\OSC Vote.exe" -DestinationPath $out
 
+      - name: List build output (macOS)
+        if: runner.os == 'macOS'
+        run: find build/bin -maxdepth 2 | sort
+
       - name: Package (macOS)
         if: runner.os == 'macOS'
         run: |
           version=$(tr -d ' \n\r' < VERSION)
-          cd build/bin && zip -r "../../OSC-Vote-v${version}-darwin-universal.zip" "OSC Vote.app"
+          app=$(find build/bin -maxdepth 1 -name "*.app" -type d | head -1)
+          [ -n "$app" ] || { echo "ERROR: no .app bundle found in build/bin"; exit 1; }
+          echo "Packaging: $app"
+          cd build/bin && zip -r "../../OSC-Vote-v${version}-darwin-universal.zip" "$(basename "$app")"
 
       - name: Package (Linux)
         if: runner.os == 'Linux'
