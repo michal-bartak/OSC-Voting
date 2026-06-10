@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { GetConfig, GetSongs, Logout } from '../../wailsjs/go/main/App';
+import { ApplySCTheme, GetConfig, GetSongs, Logout } from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
 import SettingsPopup from './SettingsPopup';
 import SongItem, { SongItemHandle } from './SongItem';
@@ -26,7 +26,24 @@ export default function VotingPage({ onLogout }: Props) {
   const [storedEmail, setStoredEmail] = useState('');
   const [storedPassword, setStoredPassword] = useState('');
   const [storedTheme, setStoredTheme] = useState('system');
+  const [isDark, setIsDark] = useState(
+    () => document.documentElement.getAttribute('data-theme') === 'dark'
+  );
   const songRefs = useRef<Record<string, SongItemHandle>>({});
+
+  // Track data-theme changes (set by applyTheme()) to keep isDark in sync.
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+      setIsDark(dark);
+      ApplySCTheme(dark);
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     Promise.all([GetSongs(), GetConfig()])
@@ -128,6 +145,7 @@ export default function VotingPage({ onLogout }: Props) {
             key={song.id}
             song={song}
             isPlaying={playingId === song.id}
+            isDark={isDark}
             onPlay={handlePlay}
             onFinish={handleFinish}
             onVote={handleVote}

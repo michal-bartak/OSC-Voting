@@ -382,15 +382,10 @@ body { background: var(--bg-base); margin: 0; }
 .vote-error { font-size: 11px; color: var(--error); margin: -4px 0 4px; }
 
 /* ── SC iframe ──────────────────────────────────────────── */
+/* background-color shows through once the injected script makes the SC player transparent. */
 .sc-iframe {
   display: block;
   border-radius: 4px;
   overflow: hidden;
-}
-
-/* SC player has a white background rendered by its own CSS inside the iframe.
-   Invert it for dark mode; hue-rotate(180deg) brings orange back to orange
-   (invert alone would turn it cyan). Day mode needs no filter — white is correct. */
-[data-theme="dark"] .sc-iframe {
-  filter: invert(1) hue-rotate(180deg);
+  background-color: var(--bg-card);
 }

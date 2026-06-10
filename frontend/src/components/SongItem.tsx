@@ -1,11 +1,12 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { OpenCommentInBrowser, SubmitVote } from '../../wailsjs/go/main/App';
+import { ApplySCTheme, OpenCommentInBrowser, SubmitVote } from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
 import { SCWidget } from '../types';
 
 interface Props {
   song: main.Song;
   isPlaying: boolean;
+  isDark: boolean;
   onPlay: (id: string) => void;
   onFinish: (id: string) => void;
   onVote: (id: string, points: number) => void;
@@ -17,7 +18,7 @@ export interface SongItemHandle {
 }
 
 const SongItem = forwardRef<SongItemHandle, Props>(
-  ({ song, isPlaying, onPlay, onFinish, onVote }, ref) => {
+  ({ song, isPlaying, isDark, onPlay, onFinish, onVote }, ref) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const widgetRef = useRef<SCWidget | null>(null);
     const positionRef = useRef(0);
@@ -44,10 +45,11 @@ const SongItem = forwardRef<SongItemHandle, Props>(
           positionRef.current = d.currentPosition;
         }
       });
+
+      // Apply current theme to this iframe once it's loaded.
+      ApplySCTheme(isDark);
     };
 
-    // If another track starts playing, the PLAY event fires automatically.
-    // We only need to handle external play() calls from the parent.
     useEffect(() => {
       if (!isPlaying) {
         widgetRef.current?.pause();
@@ -57,7 +59,7 @@ const SongItem = forwardRef<SongItemHandle, Props>(
     const handleVote = async (points: number) => {
       if (voting) return;
       const prev = prevVoteRef.current;
-      const newPoints = prev === points ? 0 : points; // click same = reset
+      const newPoints = prev === points ? 0 : points;
       prevVoteRef.current = newPoints;
       onVote(song.id, newPoints);
       setVoteError('');
