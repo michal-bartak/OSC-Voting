@@ -6,6 +6,7 @@ import SettingsPopup from './SettingsPopup';
 import SongItem, { SongItemHandle } from './SongItem';
 
 export type SortOrder = 'id' | 'vote-desc' | 'vote-asc' | 'title';
+export type LoopMode = 'none' | 'playlist' | 'song';
 
 interface Props {
   onLogout: () => void;
@@ -24,6 +25,7 @@ export default function VotingPage({ onLogout }: Props) {
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOrder>('id');
+  const [loopMode, setLoopMode] = useState<LoopMode>('none');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [autoScroll, setAutoScroll] = useState(false);
@@ -95,12 +97,19 @@ export default function VotingPage({ onLogout }: Props) {
   };
 
   const handleFinish = (id: string) => {
+    if (loopMode === 'song') {
+      setTimeout(() => songRefs.current[id]?.play(), 100);
+      return;
+    }
     const idx = sortedSongs.findIndex(s => s.id === id);
-    const next = sortedSongs[idx + 1];
-    if (next) {
+    const next = sortedSongs[idx + 1] ?? (loopMode === 'playlist' ? sortedSongs[0] : null);
+    if (next && next.id !== id) {
       setPlayingId(next.id);
       setIsPaused(false);
       setTimeout(() => songRefs.current[next.id]?.play(), 100);
+    } else if (loopMode === 'playlist' && next?.id === id) {
+      // single-song playlist: replay it
+      setTimeout(() => songRefs.current[id]?.play(), 100);
     } else {
       setPlayingId(null);
       setIsPaused(false);
@@ -175,6 +184,19 @@ export default function VotingPage({ onLogout }: Props) {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [playingId, isPaused, sortedSongs, settingsOpen]);
+
+  const handleJumpToFirstUnvoted = () => {
+    const first = sortedSongs.find(s => s.currentVote === 0);
+    if (first) {
+      document.getElementById(`song-item-${first.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  const handleJumpToPlaying = () => {
+    if (playingId) {
+      document.getElementById(`song-item-${playingId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
 
   const handleLogout = async () => {
     await Logout();
@@ -271,6 +293,10 @@ export default function VotingPage({ onLogout }: Props) {
         onPrev={handlePrev}
         onNext={handleNext}
         onSortChange={setSortOrder}
+        loopMode={loopMode}
+        onLoopChange={setLoopMode}
+        onJumpToFirstUnvoted={handleJumpToFirstUnvoted}
+        onJumpToPlaying={playingId ? handleJumpToPlaying : null}
       />
     </div>
   );

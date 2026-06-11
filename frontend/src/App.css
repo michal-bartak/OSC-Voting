@@ -417,6 +417,9 @@ body { background: var(--bg-base); margin: 0; }
 .transport-btn:hover:not(:disabled) { color: var(--text-primary); background: var(--bg-input); }
 .transport-btn:disabled { opacity: 0.3; cursor: default; }
 
+.transport-btn--loop-active { color: var(--accent); }
+.transport-btn--loop-active:hover:not(:disabled) { color: var(--accent); filter: brightness(1.2); background: var(--bg-input); }
+
 .transport-btn--play-pause {
   color: #fff;
   background: var(--accent);
@@ -425,6 +428,13 @@ body { background: var(--bg-base); margin: 0; }
   border-radius: 50%;
 }
 .transport-btn--play-pause:hover:not(:disabled) { background: var(--accent-hover); }
+
+.jump-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
 
 .bar-divider {
   width: 1px;

@@ -1,4 +1,4 @@
-import { SortOrder } from './VotingPage';
+import { LoopMode, SortOrder } from './VotingPage';
 
 interface BottomBarProps {
   playingTitle: string | null;
@@ -12,6 +12,10 @@ interface BottomBarProps {
   onPrev: () => void;
   onNext: () => void;
   onSortChange: (o: SortOrder) => void;
+  loopMode: LoopMode;
+  onLoopChange: (m: LoopMode) => void;
+  onJumpToFirstUnvoted: () => void;
+  onJumpToPlaying: (() => void) | null;
 }
 
 const PrevIcon = () => (
@@ -41,6 +45,48 @@ const PauseIcon = () => (
   </svg>
 );
 
+const LOOP_CYCLE: LoopMode[] = ['none', 'playlist', 'song'];
+
+const LOOP_TITLES: Record<LoopMode, string> = {
+  none: 'Loop: off',
+  playlist: 'Loop: playlist',
+  song: 'Loop: current song',
+};
+
+const LoopIcon = ({ mode }: { mode: LoopMode }) => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2 11V6.5A2.5 2.5 0 0 1 4.5 4H12"/>
+    <polyline points="10,2 12,4 10,6"/>
+    <path d="M14 5v4.5A2.5 2.5 0 0 1 11.5 12H4"/>
+    <polyline points="6,10 4,12 6,14"/>
+    {mode === 'song' && (
+      <>
+        <circle cx="13" cy="13" r="4" fill="var(--bg-header)" stroke="none"/>
+        <text x="13" y="16.2" textAnchor="middle" fontSize="8" fontWeight="bold" fill="currentColor" stroke="none">1</text>
+      </>
+    )}
+  </svg>
+);
+
+const JumpUnvotedIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+    <circle cx="8" cy="8" r="4.5"/>
+    <line x1="8" y1="1" x2="8" y2="4"/>
+    <line x1="8" y1="12" x2="8" y2="15"/>
+    <line x1="1" y1="8" x2="4" y2="8"/>
+    <line x1="12" y1="8" x2="15" y2="8"/>
+    <circle cx="8" cy="8" r="2" fill="currentColor" stroke="none"/>
+  </svg>
+);
+
+const JumpPlayingIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <rect x="1.5" y="6" width="3" height="8" rx="1"/>
+    <rect x="6.5" y="2" width="3" height="12" rx="1"/>
+    <rect x="11.5" y="4" width="3" height="9" rx="1"/>
+  </svg>
+);
+
 const StopIcon = () => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
     <rect x="2" y="2" width="10" height="10" rx="1.5"/>
@@ -51,6 +97,8 @@ export default function BottomBar({
   playingTitle, isPaused, sortOrder,
   hasPrev, hasNext,
   onPlay, onPause, onStop, onPrev, onNext, onSortChange,
+  loopMode, onLoopChange,
+  onJumpToFirstUnvoted, onJumpToPlaying,
 }: BottomBarProps) {
   const isPlaying = !!playingTitle && !isPaused;
 
@@ -73,6 +121,13 @@ export default function BottomBar({
         <button className="transport-btn" onClick={onNext} disabled={!hasNext} title="Next">
           <NextIcon />
         </button>
+        <button
+          className={`transport-btn${loopMode !== 'none' ? ' transport-btn--loop-active' : ''}`}
+          onClick={() => onLoopChange(LOOP_CYCLE[(LOOP_CYCLE.indexOf(loopMode) + 1) % 3])}
+          title={LOOP_TITLES[loopMode]}
+        >
+          <LoopIcon mode={loopMode} />
+        </button>
       </div>
 
       <div className="bar-divider" />
@@ -82,6 +137,17 @@ export default function BottomBar({
         <span className={`now-playing-title${!playingTitle ? ' now-playing-title--empty' : ''}`}>
           {playingTitle ?? 'Nothing playing'}
         </span>
+      </div>
+
+      <div className="bar-divider" />
+
+      <div className="jump-controls">
+        <button className="transport-btn" onClick={onJumpToFirstUnvoted} title="Jump to first unvoted">
+          <JumpUnvotedIcon />
+        </button>
+        <button className="transport-btn" onClick={onJumpToPlaying ?? undefined} disabled={!onJumpToPlaying} title="Jump to currently playing">
+          <JumpPlayingIcon />
+        </button>
       </div>
 
       <div className="bar-divider" />
