@@ -64,6 +64,16 @@ const SongItem = forwardRef<SongItemHandle, Props>(
       }
     }, [isPlaying]);
 
+    useEffect(() => {
+      const handleWindowBlur = () => {
+        if (document.activeElement === iframeRef.current) {
+          onPlayRef.current(song.id);
+        }
+      };
+      window.addEventListener('blur', handleWindowBlur);
+      return () => window.removeEventListener('blur', handleWindowBlur);
+    }, [song.id]);
+
     const handleVote = async (points: number) => {
       if (voting) return;
       const prev = prevVoteRef.current;
@@ -91,7 +101,7 @@ const SongItem = forwardRef<SongItemHandle, Props>(
     const embedUrl =
       `https://w.soundcloud.com/player/?url=${encodeURIComponent(song.soundCloudUrl)}` +
       `&auto_play=false&hide_related=true&show_comments=false` +
-      `&show_user=true&show_reposts=false&visual=false&color=%23ff5500&show_artwork=false`;
+      `&show_user=true&show_reposts=false&visual=false&color=%23888888&show_artwork=false`;
 
     return (
       <div id={`song-item-${song.id}`} className={`song-item${isPlaying ? ' song-item--playing' : ''}`}>

@@ -14,8 +14,8 @@ interface Props {
 }
 
 const THEMES = [
-  { value: 'day',    label: 'Day' },
-  { value: 'night',  label: 'Night' },
+  { value: 'day',    label: 'Light' },
+  { value: 'night',  label: 'Dark' },
   { value: 'system', label: 'System' },
 ];
 
@@ -147,7 +147,7 @@ export default function SettingsPopup({ initialEmail, initialDisplayEmail, initi
               Cancel
             </button>
             <button type="submit" className="login-btn" disabled={loading || !email || !password}>
-              {loading ? 'Saving…' : 'Save'}
+              {loading ? 'Applying…' : 'Apply'}
             </button>
           </div>
         </form>
