@@ -41,9 +41,18 @@ Get the latest release from the [Releases page](../../releases).
 SmartScreen may warn on first launch. Click **More info → Run anyway**.
 
 ### macOS
-macOS blocks unsigned apps from unknown developers. On first launch:
-1. Right-click `OSC Vote.app` → **Open**
-2. Click **Open** in the confirmation dialog
+macOS blocks unsigned apps and shows *"OSC Vote can't be opened"* with no option other than Move to Trash. This is a Gatekeeper quarantine flag added automatically when the zip is downloaded — the app is not actually damaged.
+
+**Fix — run once in Terminal after extracting the zip:**
+```bash
+xattr -d com.apple.quarantine ~/Downloads/OSC\ Vote.app
+```
+Then double-click the app normally. You won't need to do this again.
+
+If you moved the app to a different folder, adjust the path accordingly:
+```bash
+xattr -d com.apple.quarantine /Applications/OSC\ Vote.app
+```
 
 ### Linux
 Install runtime dependencies if the app fails to start:

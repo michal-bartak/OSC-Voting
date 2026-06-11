@@ -104,6 +104,30 @@ jobs:
         if: runner.os == 'macOS'
         run: find build/bin -maxdepth 2 | sort
 
+      - name: Fix icon and re-sign (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          app=$(find build/bin -maxdepth 1 -name "*.app" -type d | head -1)
+          [ -n "$app" ] || { echo "ERROR: no .app bundle found"; exit 1; }
+          # Wails generates a single-size icns; replace with full multi-size set
+          SRC="build/appicon.png"
+          ICONSET="$(mktemp -d)/app.iconset"
+          mkdir -p "$ICONSET"
+          sips -z 16   16   "$SRC" --out "$ICONSET/icon_16x16.png"    > /dev/null
+          sips -z 32   32   "$SRC" --out "$ICONSET/icon_16x16@2x.png" > /dev/null
+          sips -z 32   32   "$SRC" --out "$ICONSET/icon_32x32.png"    > /dev/null
+          sips -z 64   64   "$SRC" --out "$ICONSET/icon_32x32@2x.png" > /dev/null
+          sips -z 128  128  "$SRC" --out "$ICONSET/icon_128x128.png"  > /dev/null
+          sips -z 256  256  "$SRC" --out "$ICONSET/icon_128x128@2x.png" > /dev/null
+          sips -z 256  256  "$SRC" --out "$ICONSET/icon_256x256.png"  > /dev/null
+          sips -z 512  512  "$SRC" --out "$ICONSET/icon_256x256@2x.png" > /dev/null
+          sips -z 512  512  "$SRC" --out "$ICONSET/icon_512x512.png"  > /dev/null
+          cp "$SRC"          "$ICONSET/icon_512x512@2x.png"
+          iconutil -c icns "$ICONSET" -o "$app/Contents/Resources/iconfile.icns"
+          echo "Icon rebuilt: $(ls -lh "$app/Contents/Resources/iconfile.icns" | awk '{print $5}')"
+          # Re-sign outer bundle only (no --deep, which removes the nested binary)
+          codesign --force --sign - "$app"
+
       - name: Package (macOS)
         if: runner.os == 'macOS'
         run: |
