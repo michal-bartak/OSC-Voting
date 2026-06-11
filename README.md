@@ -1,4 +1,4 @@
-# OSC Vote
+# OSC Voting
 
 > :sparkles: The application is written with use of AI
 
@@ -31,9 +31,9 @@ Get the latest release from the [Releases page](../../releases).
 
 | Platform | File |
 |----------|------|
-| Windows | `OSC-Vote-vX.X.X-windows-amd64.zip` → extract, run `OSC Vote.exe` |
-| macOS | `OSC-Vote-vX.X.X-darwin-universal.zip` → extract, move to Applications |
-| Linux | `OSC-Vote-vX.X.X-linux-amd64.zip` → extract, run `OSC-Vote-...` |
+| Windows | `OSC-Voting-vX.X.X-windows-amd64.zip` → extract, run `OSC-Voting.exe` |
+| macOS | `OSC-Voting-vX.X.X-darwin-universal.zip` → extract, move to Applications |
+| Linux | `OSC-Voting-vX.X.X-linux-amd64.zip` → extract, run `OSC-Voting` |
 
 ## Installing
 
@@ -41,17 +41,17 @@ Get the latest release from the [Releases page](../../releases).
 SmartScreen may warn on first launch. Click **More info → Run anyway**.
 
 ### macOS
-macOS blocks unsigned apps and shows *"OSC Vote can't be opened"* with no option other than Move to Trash. This is a Gatekeeper quarantine flag added automatically when the zip is downloaded — the app is not actually damaged.
+macOS blocks unsigned apps and shows *"OSC Voting can't be opened"* with no option other than Move to Trash. This is a Gatekeeper quarantine flag added automatically when the zip is downloaded — the app is not actually damaged.
 
 **Fix — run once in Terminal after extracting the zip:**
 ```bash
-xattr -d com.apple.quarantine ~/Downloads/OSC\ Vote.app
+xattr -d com.apple.quarantine ~/Downloads/OSC-Voting.app
 ```
 Then double-click the app normally. You won't need to do this again.
 
 If you moved the app to a different folder, adjust the path accordingly:
 ```bash
-xattr -d com.apple.quarantine /Applications/OSC\ Vote.app
+xattr -d com.apple.quarantine /Applications/OSC-Voting.app
 ```
 
 ### Linux
@@ -70,8 +70,8 @@ sudo apt install libgtk-3-0 libwebkit2gtk-4.0-0
 - [Wails v2](https://wails.io): `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
 
 ```bash
-git clone https://github.com/michal-bartak/OSC-Votes.git
-cd OSC-Votes
+git clone https://github.com/michal-bartak/OSC-Votings.git
+cd OSC-Votings
 wails build -platform windows/amd64    # or: darwin/universal  linux/amd64
 ```
 

@@ -1,6 +1,6 @@
 # Memory Index
 
-- [Project overview](project_overview.md) — What OSC Vote is, tech stack, build/run commands
+- [Project overview](project_overview.md) — What OSC Voting is, tech stack, build/run commands, app name convention
 - [Architecture](architecture.md) — File map, Go structs, frontend component tree, data flow
 - [API reference](api_reference.md) — OSC site endpoints, auth, voting, session handling
 - [SoundCloud integration](soundcloud.md) — Widget API, PLAY_PROGRESS, comment deeplinks, known bugs fixed

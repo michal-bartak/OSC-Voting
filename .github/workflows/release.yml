@@ -96,13 +96,9 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
+          $output  = (jq -r '.outputfilename' wails.json)
           $version = (Get-Content VERSION -Raw).Trim()
-          $out = "OSC-Vote-v${version}-windows-amd64.zip"
-          Compress-Archive -Path "build\bin\OSC Vote.exe" -DestinationPath $out
-
-      - name: List build output (macOS)
-        if: runner.os == 'macOS'
-        run: find build/bin -maxdepth 2 | sort
+          Compress-Archive -Path "build\bin\$output.exe" -DestinationPath "$output-v$version-windows-amd64.zip"
 
       - name: Fix icon and re-sign (macOS)
         if: runner.os == 'macOS'
@@ -113,16 +109,16 @@ jobs:
           SRC="build/appicon.png"
           ICONSET="$(mktemp -d)/app.iconset"
           mkdir -p "$ICONSET"
-          sips -z 16   16   "$SRC" --out "$ICONSET/icon_16x16.png"    > /dev/null
-          sips -z 32   32   "$SRC" --out "$ICONSET/icon_16x16@2x.png" > /dev/null
-          sips -z 32   32   "$SRC" --out "$ICONSET/icon_32x32.png"    > /dev/null
-          sips -z 64   64   "$SRC" --out "$ICONSET/icon_32x32@2x.png" > /dev/null
-          sips -z 128  128  "$SRC" --out "$ICONSET/icon_128x128.png"  > /dev/null
+          sips -z 16   16   "$SRC" --out "$ICONSET/icon_16x16.png"      > /dev/null
+          sips -z 32   32   "$SRC" --out "$ICONSET/icon_16x16@2x.png"   > /dev/null
+          sips -z 32   32   "$SRC" --out "$ICONSET/icon_32x32.png"      > /dev/null
+          sips -z 64   64   "$SRC" --out "$ICONSET/icon_32x32@2x.png"   > /dev/null
+          sips -z 128  128  "$SRC" --out "$ICONSET/icon_128x128.png"    > /dev/null
           sips -z 256  256  "$SRC" --out "$ICONSET/icon_128x128@2x.png" > /dev/null
-          sips -z 256  256  "$SRC" --out "$ICONSET/icon_256x256.png"  > /dev/null
+          sips -z 256  256  "$SRC" --out "$ICONSET/icon_256x256.png"    > /dev/null
           sips -z 512  512  "$SRC" --out "$ICONSET/icon_256x256@2x.png" > /dev/null
-          sips -z 512  512  "$SRC" --out "$ICONSET/icon_512x512.png"  > /dev/null
-          cp "$SRC"          "$ICONSET/icon_512x512@2x.png"
+          sips -z 512  512  "$SRC" --out "$ICONSET/icon_512x512.png"    > /dev/null
+          cp "$SRC"           "$ICONSET/icon_512x512@2x.png"
           iconutil -c icns "$ICONSET" -o "$app/Contents/Resources/iconfile.icns"
           echo "Icon rebuilt: $(ls -lh "$app/Contents/Resources/iconfile.icns" | awk '{print $5}')"
           # Re-sign outer bundle only (no --deep, which removes the nested binary)
@@ -131,27 +127,24 @@ jobs:
       - name: Package (macOS)
         if: runner.os == 'macOS'
         run: |
+          output=$(jq -r '.outputfilename' wails.json)
           version=$(tr -d ' \n\r' < VERSION)
           app=$(find build/bin -maxdepth 1 -name "*.app" -type d | head -1)
           [ -n "$app" ] || { echo "ERROR: no .app bundle found in build/bin"; exit 1; }
           echo "Found bundle: $app"
-          # Ensure the .app folder is named "OSC Vote.app" regardless of wails.json name field
-          if [ "$(basename "$app")" != "OSC Vote.app" ]; then
-            mv "$app" "build/bin/OSC Vote.app"
-            echo "Renamed to: OSC Vote.app"
-          fi
-          cd build/bin && zip -r "../../OSC-Vote-v${version}-darwin-universal.zip" "OSC Vote.app"
+          cd build/bin && zip -r "../../$output-v$version-darwin-universal.zip" "$(basename "$app")"
 
       - name: Package (Linux)
         if: runner.os == 'Linux'
         run: |
+          output=$(jq -r '.outputfilename' wails.json)
           version=$(tr -d ' \n\r' < VERSION)
-          zip -j "OSC-Vote-v${version}-linux-amd64.zip" "build/bin/OSC Vote"
+          zip -j "$output-v$version-linux-amd64.zip" "build/bin/$output"
 
       - uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.goos }}
-          path: "OSC-Vote-v*.zip"
+          path: "OSC-Voting-v*.zip"
           if-no-files-found: error
 
   release:
@@ -173,7 +166,7 @@ jobs:
 
             - **macOS:** The app is unsigned. If macOS says it is damaged and offers only "Move to Trash", open Terminal and run:
               ```
-              xattr -d com.apple.quarantine ~/Downloads/OSC\ Vote.app
+              xattr -d com.apple.quarantine ~/Downloads/OSC-Voting.app
               ```
               Then double-click to open normally.
             - **Windows:** SmartScreen may warn; choose **More info → Run anyway**.

@@ -12,6 +12,8 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
+const appName = "OSC Voting"
+
 // App is the main application struct bound to the Wails frontend.
 type App struct {
 	ctx             context.Context
@@ -23,6 +25,8 @@ func NewApp() *App {
 	client, _ := newHTTPClient()
 	return &App{httpClient: client}
 }
+
+func (a *App) AppName() string { return appName }
 
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx

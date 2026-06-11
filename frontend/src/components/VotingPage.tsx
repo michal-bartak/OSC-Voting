@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ApplySCTheme, GetConfig, GetSongs, Logout } from '../../wailsjs/go/main/App';
+import { AppName, ApplySCTheme, GetConfig, GetSongs, Logout } from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
 import BottomBar from './BottomBar';
 import SettingsPopup from './SettingsPopup';
@@ -31,6 +31,7 @@ export default function VotingPage({ onLogout }: Props) {
   const [storedEmail, setStoredEmail] = useState('');
   const [storedPassword, setStoredPassword] = useState('');
   const [storedTheme, setStoredTheme] = useState('system');
+  const [appTitle, setAppTitle] = useState('OSC Voting');
   const [isDark, setIsDark] = useState(
     () => document.documentElement.getAttribute('data-theme') === 'dark'
   );
@@ -51,6 +52,8 @@ export default function VotingPage({ onLogout }: Props) {
     sortedSongs.forEach((s, i) => map.set(s.id, i));
     return map;
   }, [sortedSongs]);
+
+  useEffect(() => { AppName().then(setAppTitle); }, []);
 
   // Track data-theme changes (set by applyTheme()) to keep isDark in sync.
   useEffect(() => {
@@ -202,7 +205,7 @@ export default function VotingPage({ onLogout }: Props) {
     <div className="voting-page">
       <header className="voting-header">
         <div className="header-left">
-          <span className="header-title">OSC Voting</span>
+          <span className="header-title">{appTitle}</span>
           <span className="header-challenge">Challenge #{challengeNumber}</span>
         </div>
         <div className="header-right">

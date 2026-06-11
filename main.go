@@ -17,7 +17,7 @@ func main() {
 	app := NewApp()
 
 	err := wails.Run(&options.App{
-		Title:  "OSC Vote v" + appVersion,
+		Title:  appName + " v" + appVersion,
 		Width:  1200,
 		Height: 820,
 		MinWidth:  900,
