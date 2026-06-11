@@ -31,6 +31,7 @@ export default function VotingPage({ onLogout }: Props) {
   const [autoScroll, setAutoScroll] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [storedEmail, setStoredEmail] = useState('');
+  const [storedDisplayEmail, setStoredDisplayEmail] = useState('');
   const [storedPassword, setStoredPassword] = useState('');
   const [storedTheme, setStoredTheme] = useState('system');
   const [appTitle, setAppTitle] = useState('OSC Voting');
@@ -76,7 +77,8 @@ export default function VotingPage({ onLogout }: Props) {
         setSongs(state.songs);
         setChallengeNumber(state.challengeNumber);
         setAutoScroll(cfg.autoScrollToUnvoted);
-        setStoredEmail('demo@example.com');
+        setStoredEmail(cfg.email ?? '');
+        setStoredDisplayEmail(cfg.displayEmail ?? '');
         setStoredPassword(cfg.password ?? '');
         setStoredTheme(cfg.theme ?? 'system');
         if (cfg.autoScrollToUnvoted) {
@@ -246,6 +248,7 @@ export default function VotingPage({ onLogout }: Props) {
       {settingsOpen && (
         <SettingsPopup
           initialEmail={storedEmail}
+          initialDisplayEmail={storedDisplayEmail}
           initialPassword={storedPassword}
           initialTheme={storedTheme}
           initialAutoScroll={autoScroll}

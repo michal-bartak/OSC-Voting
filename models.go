@@ -16,5 +16,6 @@ type Config struct {
 	AutoScrollToUnvoted bool   `json:"autoScrollToUnvoted"`
 	Email               string `json:"email,omitempty"`
 	Password            string `json:"password,omitempty"`
-	Theme               string `json:"theme,omitempty"` // "day" | "night" | "system" (default)
+	Theme               string `json:"theme,omitempty"`        // "day" | "night" | "system" (default)
+	DisplayEmail        string `json:"displayEmail,omitempty"` // if set, shown instead of real email in UI
 }

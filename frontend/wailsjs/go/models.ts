@@ -55,6 +55,7 @@ export namespace main {
 	    email?: string;
 	    password?: string;
 	    theme?: string;
+	    displayEmail?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -66,6 +67,7 @@ export namespace main {
 	        this.email = source["email"];
 	        this.password = source["password"];
 	        this.theme = source["theme"];
+	        this.displayEmail = source["displayEmail"];
 	    }
 	}
 

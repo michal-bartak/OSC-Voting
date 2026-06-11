@@ -4,6 +4,7 @@ import { applyTheme } from '../theme';
 
 interface Props {
   initialEmail: string;
+  initialDisplayEmail?: string;
   initialPassword: string;
   initialTheme: string;
   initialAutoScroll: boolean;
@@ -18,7 +19,7 @@ const THEMES = [
   { value: 'system', label: 'System' },
 ];
 
-export default function SettingsPopup({ initialEmail, initialPassword, initialTheme, initialAutoScroll, onSave, onAutoScrollChange, onClose }: Props) {
+export default function SettingsPopup({ initialEmail, initialDisplayEmail, initialPassword, initialTheme, initialAutoScroll, onSave, onAutoScrollChange, onClose }: Props) {
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState(initialPassword);
   const [theme, setTheme] = useState(initialTheme || 'system');
@@ -72,7 +73,7 @@ export default function SettingsPopup({ initialEmail, initialPassword, initialTh
     setError('');
     try {
       await Login(email, password);
-      onSave(email, password, theme);
+      onSave(initialDisplayEmail ? initialEmail : email, password, theme);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -124,7 +125,7 @@ export default function SettingsPopup({ initialEmail, initialPassword, initialTh
           <input
             type="email"
             className="field-input"
-            value={email}
+            value={initialDisplayEmail || email}
             onChange={e => setEmail(e.target.value)}
             placeholder="your@email.com"
             autoComplete="email"
