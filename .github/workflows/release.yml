@@ -110,8 +110,13 @@ jobs:
           version=$(tr -d ' \n\r' < VERSION)
           app=$(find build/bin -maxdepth 1 -name "*.app" -type d | head -1)
           [ -n "$app" ] || { echo "ERROR: no .app bundle found in build/bin"; exit 1; }
-          echo "Packaging: $app"
-          cd build/bin && zip -r "../../OSC-Vote-v${version}-darwin-universal.zip" "$(basename "$app")"
+          echo "Found bundle: $app"
+          # Ensure the .app folder is named "OSC Vote.app" regardless of wails.json name field
+          if [ "$(basename "$app")" != "OSC Vote.app" ]; then
+            mv "$app" "build/bin/OSC Vote.app"
+            echo "Renamed to: OSC Vote.app"
+          fi
+          cd build/bin && zip -r "../../OSC-Vote-v${version}-darwin-universal.zip" "OSC Vote.app"
 
       - name: Package (Linux)
         if: runner.os == 'Linux'
@@ -142,7 +147,11 @@ jobs:
           body: |
             ### Installing
 
-            - **macOS:** First launch requires **Right-click → Open** (unsigned build).
+            - **macOS:** The app is unsigned. If macOS says it is damaged and offers only "Move to Trash", open Terminal and run:
+              ```
+              xattr -d com.apple.quarantine ~/Downloads/OSC\ Vote.app
+              ```
+              Then double-click to open normally.
             - **Windows:** SmartScreen may warn; choose **More info → Run anyway**.
             - **Linux:** Install runtime libs `libgtk-3-0` and `libwebkit2gtk-4.1-0` if needed.
           files: dist/*
