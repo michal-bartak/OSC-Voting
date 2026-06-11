@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AppName, ApplySCTheme, GetConfig, GetSongs, Logout } from '../../wailsjs/go/main/App';
+import { AppName, GetConfig, GetSongs, Logout } from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
 import BottomBar from './BottomBar';
 import SettingsPopup from './SettingsPopup';
@@ -62,7 +62,6 @@ export default function VotingPage({ onLogout }: Props) {
     const observer = new MutationObserver(() => {
       const dark = document.documentElement.getAttribute('data-theme') === 'dark';
       setIsDark(dark);
-      ApplySCTheme(dark);
     });
     observer.observe(document.documentElement, {
       attributes: true,
@@ -295,6 +294,7 @@ export default function VotingPage({ onLogout }: Props) {
         onSortChange={setSortOrder}
         loopMode={loopMode}
         onLoopChange={setLoopMode}
+        hasUnvoted={songs.some(s => s.currentVote === 0)}
         onJumpToFirstUnvoted={handleJumpToFirstUnvoted}
         onJumpToPlaying={playingId ? handleJumpToPlaying : null}
       />

@@ -18,8 +18,10 @@ Per-song iframe embed URL pattern:
 ```
 https://w.soundcloud.com/player/?url={encodeURIComponent(trackUrl)}&auto_play=false
   &hide_related=true&show_comments=false&show_user=true&show_reposts=false
-  &visual=false&color=%23ff5500
+  &visual=false&color=%23ff5500&show_artwork=false
 ```
+
+`show_artwork=false` is always set — artwork is rendered separately as a native `<img>` (see UI decisions).
 
 Widget init in `SongItem.tsx` `handleIframeLoad`:
 ```typescript
@@ -31,6 +33,13 @@ widget.bind(window.SC.Widget.Events.FINISH, () => onFinish(song.id));
 widget.bind(window.SC.Widget.Events.PLAY_PROGRESS, (data: unknown) => {
   const d = data as { currentPosition?: number };
   if (typeof d?.currentPosition === 'number') positionRef.current = d.currentPosition;
+});
+widget.bind(window.SC.Widget.Events.READY, () => {
+  widget.getCurrentSound(sound => {
+    // fall back to user avatar when track has no artwork
+    const raw = sound?.artwork_url ?? sound?.user?.avatar_url ?? null;
+    setArtworkUrl(raw ? raw.replace('-large', '-t200x200') : null);
+  });
 });
 ```
 
@@ -57,6 +66,17 @@ SC track pages autoplay when opened via URL (including `#t=...` format). There i
 
 Declared in `frontend/src/types.ts`:
 ```typescript
+export interface SCWidget {
+  play(): void; pause(): void; toggle(): void;
+  seekTo(ms: number): void;
+  getPosition(cb: (pos: number) => void): void;
+  bind(event: string, listener: (data?: unknown) => void): void;
+  unbind(event: string): void;
+  getCurrentSound(cb: (sound: {
+    artwork_url?: string | null;
+    user?: { avatar_url?: string };
+  } | null) => void): void;
+}
 declare global {
   interface Window {
     SC: {

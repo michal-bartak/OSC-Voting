@@ -320,7 +320,12 @@ body { background: var(--bg-base); margin: 0; }
   border-left: 3px solid transparent;
   border-radius: 8px;
   padding: 10px 12px 6px;
-  transition: border-left-color 0.2s;
+  transition: border-left-color 0.2s, opacity 0.25s ease, filter 0.25s ease;
+}
+.song-list:has(.song-actions:hover) .song-item:not(:has(.song-actions:hover)) {
+  opacity: 0.35;
+  filter: blur(1px);
+  transition-delay: 200ms;
 }
 .song-item--playing { border-left-color: var(--accent); background: var(--bg-playing); }
 
@@ -492,11 +497,32 @@ body { background: var(--bg-base); margin: 0; }
 .sort-select:hover { border-color: var(--border-hover); color: var(--text-secondary); }
 .sort-select:focus { border-color: var(--accent); }
 
-/* ── SC iframe ──────────────────────────────────────────── */
-/* background-color shows through once the injected script makes the SC player transparent. */
-.sc-iframe {
-  display: block;
+/* ── SC player ──────────────────────────────────────────── */
+.sc-player-wrap {
+  display: flex;
+  align-items: stretch;
   border-radius: 4px;
   overflow: hidden;
+}
+.sc-artwork {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  flex-shrink: 0;
+  display: block;
+  position: relative;
+  z-index: 1;
+  margin-right: -4px;
+}
+.sc-artwork--placeholder {
+  background-color: var(--bg-input);
+}
+.sc-iframe {
+  display: block;
+  flex: 1;
+  min-width: 0;
   background-color: var(--bg-card);
+}
+.sc-player-wrap--dark .sc-iframe {
+  filter: invert(0.9) hue-rotate(180deg);
 }

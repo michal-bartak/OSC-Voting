@@ -15,6 +15,26 @@ metadata:
 - Error color: `#ff6b6b`
 - Border radius: 6–12px; cards use 12px, buttons use 5–6px
 
+## Dark / Light / System theme
+
+Three modes: `day`, `night`, `system`. Implemented via CSS custom properties on `[data-theme]` attribute. `VotingPage` tracks `isDark` via `MutationObserver` on `document.documentElement` and passes it down as a prop to `SongItem`.
+
+The SC player iframe has no native dark mode. When `isDark` is true, `filter: invert(0.9) hue-rotate(180deg)` is applied to the iframe via `.sc-player-wrap--dark .sc-iframe`. `hue-rotate(180deg)` preserves the orange accent color after inversion.
+
+## SC player artwork layout
+
+Artwork is always rendered as a native `<img>` element **outside** the iframe (so it is never subject to the dark mode filter). The embed always uses `show_artwork=false`. Layout:
+
+```
+.sc-player-wrap (flex row, border-radius, overflow:hidden)
+  .sc-artwork  (120×120px img, margin-right:-4px, z-index:1)
+  .sc-iframe   (flex:1)
+```
+
+The `-4px` right margin overlaps the artwork over the iframe edge to hide the SC player's internal border-radius / box-shadow corner artifact (see known issues). Always keep this overlap; reducing it brings the artifact back.
+
+Artwork URL: from `getCurrentSound()` on `READY` event. Falls back to `sound.user.avatar_url` when the track has no artwork set. Both use `-large` suffix replaced with `-t200x200`.
+
 ## SC iframe height
 
 Fixed at `height="120"` — the compact SC embed (visual=false) needs exactly this to show the waveform without extra whitespace. Do not use `visual=true` — it would be too tall.
@@ -22,6 +42,15 @@ Fixed at `height="120"` — the compact SC embed (visual=false) needs exactly th
 ## Vote buttons
 
 1–5 inline buttons per song. Clicking the active score again resets to 0 (unvote). Optimistic update in React state with revert on network error.
+
+When hovering anywhere within `.song-actions` (vote buttons + comment button), all other `.song-item` cards dim via CSS `:has()`:
+```css
+.song-list:has(.song-actions:hover) .song-item:not(:has(.song-actions:hover)) {
+  opacity: 0.35;
+  filter: blur(1px);
+}
+```
+The hover target is `.song-actions` (the wrapper div), not individual `.vote-btn` elements — this prevents flicker when the pointer moves between buttons.
 
 ## Comment button
 

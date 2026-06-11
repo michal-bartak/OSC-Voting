@@ -92,6 +92,16 @@ $bw.Dispose(); $stream.Dispose(); Write-Host "Done"
 
 **Note:** macOS (.icns) and Linux are generated automatically by Wails from `appicon.png` at build time — no manual step needed.
 
+## SC player corner artifact next to sibling element
+
+**Symptom:** When an element (artwork `<img>`) is placed flush against a SoundCloud iframe, bright pixels appear at the junction corner. `overflow: hidden` on the parent does not clip iframe-internal content.
+
+**Root cause:** The SC player widget has its own internal `border-radius` + `box-shadow` (3D chrome effect) rendered inside the iframe browsing context. These bleed through at the corner regardless of parent clipping.
+
+**Fix:** Apply `margin-right: -4px; position: relative; z-index: 1` to the sibling element so it overlaps the iframe by 4px, covering the artifact. 2px was not enough; 4px is the minimum that fully hides it.
+
+**Do not use** `box-shadow: inset` on the parent — it paints a visible stripe along all four edges in dark mode.
+
 ## Sorting iframes: use CSS `order`, not DOM reorder
 
 **Problem:** Changing sort order via React re-render (reordering array in `.map()`) moves iframe DOM nodes, causing browsers to reload them — SoundCloud widgets would restart from scratch on every sort change.

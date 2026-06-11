@@ -10,6 +10,10 @@ export interface SCWidget {
   getPosition(callback: (position: number) => void): void;
   bind(event: string, listener: (data?: unknown) => void): void;
   unbind(event: string): void;
+  getCurrentSound(callback: (sound: {
+    artwork_url?: string | null;
+    user?: { avatar_url?: string };
+  } | null) => void): void;
 }
 
 declare global {

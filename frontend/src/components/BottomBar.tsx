@@ -14,6 +14,7 @@ interface BottomBarProps {
   onSortChange: (o: SortOrder) => void;
   loopMode: LoopMode;
   onLoopChange: (m: LoopMode) => void;
+  hasUnvoted: boolean;
   onJumpToFirstUnvoted: () => void;
   onJumpToPlaying: (() => void) | null;
 }
@@ -98,7 +99,7 @@ export default function BottomBar({
   hasPrev, hasNext,
   onPlay, onPause, onStop, onPrev, onNext, onSortChange,
   loopMode, onLoopChange,
-  onJumpToFirstUnvoted, onJumpToPlaying,
+  hasUnvoted, onJumpToFirstUnvoted, onJumpToPlaying,
 }: BottomBarProps) {
   const isPlaying = !!playingTitle && !isPaused;
 
@@ -142,7 +143,7 @@ export default function BottomBar({
       <div className="bar-divider" />
 
       <div className="jump-controls">
-        <button className="transport-btn" onClick={onJumpToFirstUnvoted} title="Jump to first unvoted">
+        <button className="transport-btn" onClick={onJumpToFirstUnvoted} disabled={!hasUnvoted} title="Jump to first unvoted">
           <JumpUnvotedIcon />
         </button>
         <button className="transport-btn" onClick={onJumpToPlaying ?? undefined} disabled={!onJumpToPlaying} title="Jump to currently playing">

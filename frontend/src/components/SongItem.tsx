@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { ApplySCTheme, OpenCommentInBrowser, SubmitVote } from '../../wailsjs/go/main/App';
+import { OpenCommentInBrowser, SubmitVote } from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
 import { SCWidget } from '../types';
 
@@ -29,6 +29,7 @@ const SongItem = forwardRef<SongItemHandle, Props>(
     const [voteError, setVoteError] = useState('');
     const [voting, setVoting] = useState(false);
     const prevVoteRef = useRef(song.currentVote);
+    const [artworkUrl, setArtworkUrl] = useState<string | null>(null);
 
     useImperativeHandle(ref, () => ({
       play() { widgetRef.current?.play(); },
@@ -49,9 +50,12 @@ const SongItem = forwardRef<SongItemHandle, Props>(
           positionRef.current = d.currentPosition;
         }
       });
-
-      // Apply current theme to this iframe once it's loaded.
-      ApplySCTheme(isDark);
+      widget.bind(window.SC.Widget.Events.READY, () => {
+        widget.getCurrentSound(sound => {
+          const raw = sound?.artwork_url ?? sound?.user?.avatar_url ?? null;
+          setArtworkUrl(raw ? raw.replace('-large', '-t200x200') : null);
+        });
+      });
     };
 
     useEffect(() => {
@@ -87,7 +91,7 @@ const SongItem = forwardRef<SongItemHandle, Props>(
     const embedUrl =
       `https://w.soundcloud.com/player/?url=${encodeURIComponent(song.soundCloudUrl)}` +
       `&auto_play=false&hide_related=true&show_comments=false` +
-      `&show_user=true&show_reposts=false&visual=false&color=%23ff5500`;
+      `&show_user=true&show_reposts=false&visual=false&color=%23ff5500&show_artwork=false`;
 
     return (
       <div id={`song-item-${song.id}`} className={`song-item${isPlaying ? ' song-item--playing' : ''}`}>
@@ -117,18 +121,24 @@ const SongItem = forwardRef<SongItemHandle, Props>(
           </div>
         </div>
         {voteError && <div className="vote-error">{voteError}</div>}
-        <iframe
-          ref={iframeRef}
-          id={`sc-player-${song.id}`}
-          src={embedUrl}
-          width="100%"
-          height="120"
-          scrolling="no"
-          frameBorder="0"
-          allow="autoplay"
-          onLoad={handleIframeLoad}
-          className="sc-iframe"
-        />
+        <div className={`sc-player-wrap${isDark ? ' sc-player-wrap--dark' : ''}`}>
+          {artworkUrl
+            ? <img src={artworkUrl} className="sc-artwork" alt="" />
+            : <div className="sc-artwork sc-artwork--placeholder" />
+          }
+          <iframe
+            ref={iframeRef}
+            id={`sc-player-${song.id}`}
+            src={embedUrl}
+            width="100%"
+            height="120"
+            scrolling="no"
+            frameBorder="0"
+            allow="autoplay"
+            onLoad={handleIframeLoad}
+            className="sc-iframe"
+          />
+        </div>
       </div>
     );
   }
