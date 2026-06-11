@@ -14,6 +14,10 @@ export function GetConfig() {
   return window['go']['main']['App']['GetConfig']();
 }
 
+export function GetConfigPath() {
+  return window['go']['main']['App']['GetConfigPath']();
+}
+
 export function GetSongs() {
   return window['go']['main']['App']['GetSongs']();
 }

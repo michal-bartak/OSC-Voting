@@ -8,6 +8,8 @@ export function ApplySCTheme(arg1:boolean):Promise<void>;
 
 export function GetConfig():Promise<main.Config>;
 
+export function GetConfigPath():Promise<string>;
+
 export function GetSongs():Promise<main.AppState>;
 
 export function IsLoggedIn():Promise<boolean>;

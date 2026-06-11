@@ -10,6 +10,10 @@ func appConfigFilePath() string {
 	return filepath.Join(configDir(), "config.json")
 }
 
+func (a *App) GetConfigPath() string {
+	return appConfigFilePath()
+}
+
 func (a *App) GetConfig() (*Config, error) {
 	data, err := os.ReadFile(appConfigFilePath())
 	if os.IsNotExist(err) {

@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"golang.org/x/net/publicsuffix"
 )
@@ -15,7 +16,8 @@ const oscBaseURL = "https://www.onesynthchallenge.org"
 
 func configDir() string {
 	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".config", "osc")
+	dirName := strings.ToLower(strings.ReplaceAll(appName, " ", "-"))
+	return filepath.Join(home, ".config", dirName)
 }
 
 func sessionFilePath() string {

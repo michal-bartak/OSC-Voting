@@ -281,6 +281,33 @@ body { background: var(--bg-base); margin: 0; }
   border-top: 1px solid var(--border);
   margin: 0 0 20px;
 }
+.config-path-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.config-path-row:hover { border-color: var(--accent); }
+.config-path {
+  flex: 1;
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  word-break: break-all;
+}
+.config-path-copy {
+  width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
 .settings-toggle {
   display: flex;
   align-items: center;

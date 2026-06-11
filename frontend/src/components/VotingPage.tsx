@@ -76,7 +76,7 @@ export default function VotingPage({ onLogout }: Props) {
         setSongs(state.songs);
         setChallengeNumber(state.challengeNumber);
         setAutoScroll(cfg.autoScrollToUnvoted);
-        setStoredEmail(cfg.email ?? '');
+        setStoredEmail('demo@example.com');
         setStoredPassword(cfg.password ?? '');
         setStoredTheme(cfg.theme ?? 'system');
         if (cfg.autoScrollToUnvoted) {

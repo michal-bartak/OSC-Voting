@@ -25,7 +25,7 @@ A desktop app for voting in the [One Synth Challenge](https://onesynthchallenge.
 
 > Due to SoundCloud limitations, opened comment page starts the song playbeck. Prace SPACE bar to stop it immediatelly (or mute the browser)
 
-![Screenshot](docs/screenshot.png)
+![Screenshot](docs/screenshot.gif)
 
 ## Download
 
