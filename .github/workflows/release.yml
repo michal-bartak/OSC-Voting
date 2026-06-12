@@ -253,7 +253,6 @@ jobs:
             --maintainer "$maintainer" \
             --license "MIT" \
             --depends gtk3 \
-            --depends webkit2gtk4.0 \
             --architecture x86_64 \
             --package "$output-v$version-linux-amd64.rpm" \
             "$binary=/usr/bin/$output" \

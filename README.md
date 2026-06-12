@@ -74,8 +74,9 @@ sudo dnf install ./OSC-Voting-vX.X.X-linux-amd64.rpm
 
 If the app fails to start despite the package being installed, install the runtime libraries manually:
 ```bash
-sudo apt install libgtk-3-0 libwebkit2gtk-4.0-0   # Debian/Ubuntu
-sudo dnf install gtk3 webkit2gtk4.0               # Fedora
+sudo apt install libgtk-3-0 libwebkit2gtk-4.0-0          # Debian/Ubuntu
+sudo dnf install gtk3 webkit2gtk4.1                       # Fedora 38+
+sudo dnf install gtk3 webkit2gtk3                         # Fedora 37 and older / RHEL 9
 ```
 
 ## Building from source
