@@ -45,7 +45,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             platform: linux/amd64
             goos: linux
           - os: windows-latest
@@ -76,7 +76,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
-            libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
+            libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
 
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0
@@ -238,7 +238,7 @@ jobs:
             --maintainer "$maintainer" \
             --license "MIT" \
             --depends libgtk-3-0 \
-            --depends "libwebkit2gtk-4.0-0 | libwebkit2gtk-4.1-0" \
+            --depends libwebkit2gtk-4.1-0 \
             --architecture amd64 \
             --package "$output-v$version-linux-amd64.deb" \
             "$binary=/usr/bin/$output" \
