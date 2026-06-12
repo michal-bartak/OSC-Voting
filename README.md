@@ -52,11 +52,11 @@ curl -LJO https://github.com/michal-bartak/OSC-Votes/releases/latest/download/OS
 Open the downloaded `.dmg` normally — no further steps needed.
 
 **Option 2 — already downloaded via browser:**
-After dragging the app to Applications, run once in Terminal:
+Open the .dmg, drag the app to Applications, then run once in Terminal:
 ```bash
 xattr -d com.apple.quarantine /Applications/OSC-Voting.app
 ```
-Then double-click the app normally. You won't need to do this again.
+After that you can run app normally. You won't need to do this again.
 
 ### Linux
 Install runtime dependencies if the app fails to start:
