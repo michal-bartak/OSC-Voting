@@ -132,7 +132,14 @@ jobs:
           app=$(find build/bin -maxdepth 1 -name "*.app" -type d | head -1)
           [ -n "$app" ] || { echo "ERROR: no .app bundle found in build/bin"; exit 1; }
           echo "Found bundle: $app"
-          cd build/bin && zip -r "../../$output-v$version-darwin-universal.zip" "$(basename "$app")"
+          staging=$(mktemp -d)
+          cp -r "$app" "$staging/"
+          ln -s /Applications "$staging/Applications"
+          hdiutil create \
+            -volname "OSC Voting" \
+            -srcfolder "$staging" \
+            -ov -format UDZO \
+            "$output-v$version-macos-universal.dmg"
 
       - name: Package (Linux)
         if: runner.os == 'Linux'
@@ -144,7 +151,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.goos }}
-          path: "OSC-Voting-v*.zip"
+          path: "OSC-Voting-v*"
           if-no-files-found: error
 
   release:
@@ -164,11 +171,15 @@ jobs:
           body: |
             ### Installing
 
-            - **macOS:** The app is unsigned. If macOS says it is damaged and offers only "Move to Trash", open Terminal and run:
-              ```
-              xattr -d com.apple.quarantine ~/Downloads/OSC-Voting.app
-              ```
-              Then double-click to open normally.
+            - **macOS:** Open the `.dmg`, drag **OSC Voting** to the Applications folder, then eject the disk image. The app is unsigned, so Gatekeeper will block it on first launch. Two ways to fix this:
+              - **Recommended — download with curl** (no quarantine flag is set):
+                ```
+                curl -LJO https://github.com/michal-bartak/OSC-Votes/releases/download/${{ needs.prepare.outputs.tag }}/OSC-Voting-${{ needs.prepare.outputs.tag }}-macos-universal.dmg
+                ```
+              - **Already downloaded via browser** — run once in Terminal after dragging to Applications:
+                ```
+                xattr -d com.apple.quarantine /Applications/OSC-Voting.app
+                ```
             - **Windows:** SmartScreen may warn; choose **More info → Run anyway**.
             - **Linux:** Install runtime libs `libgtk-3-0` and `libwebkit2gtk-4.1-0` if needed.
           files: dist/*
