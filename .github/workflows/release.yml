@@ -164,8 +164,10 @@ jobs:
             -ov -format UDRW -size 200m /tmp/osc-rw.dmg
 
           # 4. Mount
-          device=$(hdiutil attach -readwrite -noverify /tmp/osc-rw.dmg | \
-            grep "^/dev" | tail -1 | awk '{print $1}')
+          hdiutil attach -readwrite -noverify /tmp/osc-rw.dmg | tee /tmp/hdiutil-attach.txt
+          device=$(grep "^/dev" /tmp/hdiutil-attach.txt | tail -1 | awk '{print $1}')
+          echo "Mounted as: $device"
+          [ -n "$device" ] || { echo "ERROR: could not determine device"; exit 1; }
           sleep 3
 
           # 5. Set window layout via Finder AppleScript
@@ -191,8 +193,9 @@ jobs:
             -e '  end tell' \
             -e 'end tell'
 
-          # 6. Unmount
-          hdiutil detach "$device" -quiet
+          # 6. Unmount (sync first so Finder flushes; -force overrides EBUSY)
+          sync
+          hdiutil detach "$device" -force
 
           # 7. Convert to compressed read-only DMG
           hdiutil convert /tmp/osc-rw.dmg -format UDZO -imagekey zlib-level=9 \
