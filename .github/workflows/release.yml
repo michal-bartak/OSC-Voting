@@ -203,7 +203,59 @@ jobs:
         run: |
           output=$(jq -r '.outputfilename' wails.json)
           version=$(tr -d ' \n\r' < VERSION)
-          zip -j "$output-v$version-linux-amd64.zip" "build/bin/$output"
+          binary="build/bin/$output"
+          pkgname="osc-voting"
+          description="Desktop voting app for the OneSynthChallenge"
+          url="https://github.com/michal-bartak/OSC-Votes"
+          maintainer="Michal Bartak <maxym.srpl@gmail.com>"
+
+          # Install packaging tools
+          sudo apt-get install -y --no-install-recommends rpm ruby-dev
+          sudo gem install --no-document fpm
+
+          # Generate .desktop file
+          printf '%s\n' \
+            '[Desktop Entry]' \
+            'Type=Application' \
+            'Name=OSC Voting' \
+            'Comment=Vote on tracks in the OneSynthChallenge' \
+            'Exec=/usr/bin/OSC-Voting' \
+            'Icon=osc-voting' \
+            'Categories=AudioVideo;Audio;' \
+            > /tmp/osc-voting.desktop
+
+          # Copy icon
+          cp build/appicon.png /tmp/osc-voting.png
+
+          # Build .deb
+          fpm -s dir -t deb \
+            -n "$pkgname" -v "$version" \
+            --description "$description" \
+            --url "$url" \
+            --maintainer "$maintainer" \
+            --license "MIT" \
+            --depends libgtk-3-0 \
+            --depends "libwebkit2gtk-4.0-0 | libwebkit2gtk-4.1-0" \
+            --architecture amd64 \
+            --package "$output-v$version-linux-amd64.deb" \
+            "$binary=/usr/bin/$output" \
+            /tmp/osc-voting.desktop=/usr/share/applications/osc-voting.desktop \
+            /tmp/osc-voting.png=/usr/share/icons/hicolor/256x256/apps/osc-voting.png
+
+          # Build .rpm
+          fpm -s dir -t rpm \
+            -n "$pkgname" -v "$version" \
+            --description "$description" \
+            --url "$url" \
+            --maintainer "$maintainer" \
+            --license "MIT" \
+            --depends gtk3 \
+            --depends webkit2gtk4.0 \
+            --architecture x86_64 \
+            --package "$output-v$version-linux-amd64.rpm" \
+            "$binary=/usr/bin/$output" \
+            /tmp/osc-voting.desktop=/usr/share/applications/osc-voting.desktop \
+            /tmp/osc-voting.png=/usr/share/icons/hicolor/256x256/apps/osc-voting.png
 
       - uses: actions/upload-artifact@v4
         with:
@@ -238,5 +290,6 @@ jobs:
                 xattr -d com.apple.quarantine /Applications/OSC-Voting.app
                 ```
             - **Windows:** SmartScreen may warn; choose **More info → Run anyway**.
-            - **Linux:** Install runtime libs `libgtk-3-0` and `libwebkit2gtk-4.1-0` if needed.
+            - **Linux (Debian/Ubuntu):** `sudo apt install ./OSC-Voting-${{ needs.prepare.outputs.tag }}-linux-amd64.deb`
+            - **Linux (Fedora/RHEL):** `sudo dnf install ./OSC-Voting-${{ needs.prepare.outputs.tag }}-linux-amd64.rpm`
           files: dist/*

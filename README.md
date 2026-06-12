@@ -35,7 +35,8 @@ Get the latest release from the [Releases page](../../releases).
 |----------|------|
 | Windows | `OSC-Voting-vX.X.X-windows-amd64.zip` → extract, run `OSC-Voting.exe` |
 | macOS | `OSC-Voting-vX.X.X-macos-universal.dmg` → open, drag to Applications |
-| Linux | `OSC-Voting-vX.X.X-linux-amd64.zip` → extract, run `OSC-Voting` |
+| Linux (Debian/Ubuntu) | `OSC-Voting-vX.X.X-linux-amd64.deb` → `sudo apt install ./OSC-Voting-*.deb` |
+| Linux (Fedora/RHEL) | `OSC-Voting-vX.X.X-linux-amd64.rpm` → `sudo dnf install ./OSC-Voting-*.rpm` |
 
 ## Installing
 
@@ -59,9 +60,22 @@ xattr -d com.apple.quarantine /Applications/OSC-Voting.app
 After that you can run app normally. You won't need to do this again.
 
 ### Linux
-Install runtime dependencies if the app fails to start:
+The packages declare runtime dependencies, so your package manager will install them automatically.
+
+**Debian / Ubuntu:**
 ```bash
-sudo apt install libgtk-3-0 libwebkit2gtk-4.0-0
+sudo apt install ./OSC-Voting-vX.X.X-linux-amd64.deb
+```
+
+**Fedora / RHEL / openSUSE:**
+```bash
+sudo dnf install ./OSC-Voting-vX.X.X-linux-amd64.rpm
+```
+
+If the app fails to start despite the package being installed, install the runtime libraries manually:
+```bash
+sudo apt install libgtk-3-0 libwebkit2gtk-4.0-0   # Debian/Ubuntu
+sudo dnf install gtk3 webkit2gtk4.0               # Fedora
 ```
 
 ## Building from source
