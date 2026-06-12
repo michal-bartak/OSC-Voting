@@ -131,8 +131,72 @@ jobs:
           version=$(tr -d ' \n\r' < VERSION)
           app=$(find build/bin -maxdepth 1 -name "*.app" -type d | head -1)
           [ -n "$app" ] || { echo "ERROR: no .app bundle found in build/bin"; exit 1; }
-          echo "Found bundle: $app"
-          cd build/bin && zip -r "../../$output-v$version-darwin-universal.zip" "$(basename "$app")"
+          appname="$(basename "$app")"
+
+          # Remove any stale darwin zip from earlier builds
+          rm -f "$output"-v*-darwin-universal.zip
+
+          # 1. Generate background image: dark background + grey arrow
+          pip3 install --quiet --break-system-packages Pillow
+          printf '%s\n' \
+            'from PIL import Image, ImageDraw' \
+            'W, H = 540, 440' \
+            'img = Image.new("RGBA", (W, H), (255, 212, 160, 255))' \
+            'draw = ImageDraw.Draw(img)' \
+            'TRI_W, TRI_H, TRI_GAP, TRI_N = 15, 17, 8, 5' \
+            'arrow_color = (255, 85, 0, 229)' \
+            'start_x = (209 + 331) / 2 - (TRI_N * TRI_W + (TRI_N-1) * TRI_GAP) / 2' \
+            'cy = 185' \
+            '[draw.polygon([(start_x+i*(TRI_W+TRI_GAP), cy-TRI_H/2), (start_x+i*(TRI_W+TRI_GAP)+TRI_W, cy), (start_x+i*(TRI_W+TRI_GAP), cy+TRI_H/2)], fill=arrow_color) for i in range(TRI_N)]' \
+            'img.convert("RGB").save("/tmp/dmg-background.png")' \
+            > /tmp/gen_bg.py
+          python3 /tmp/gen_bg.py
+
+          # 2. Stage: app bundle + Applications symlink + hidden background folder
+          staging=$(mktemp -d)
+          cp -r "$app" "$staging/"
+          ln -s /Applications "$staging/Applications"
+          mkdir "$staging/.background"
+          cp /tmp/dmg-background.png "$staging/.background/background.png"
+
+          # 3. Create writable DMG
+          hdiutil create -volname "OSC Voting" -srcfolder "$staging" \
+            -ov -format UDRW -size 200m /tmp/osc-rw.dmg
+
+          # 4. Mount
+          device=$(hdiutil attach -readwrite -noverify /tmp/osc-rw.dmg | \
+            grep "^/dev" | tail -1 | awk '{print $1}')
+          sleep 3
+
+          # 5. Set window layout via Finder AppleScript
+          osascript \
+            -e 'tell application "Finder"' \
+            -e '  tell disk "OSC Voting"' \
+            -e '    open' \
+            -e '    set current view of container window to icon view' \
+            -e '    set toolbar visible of container window to false' \
+            -e '    set statusbar visible of container window to false' \
+            -e '    set bounds of container window to {200, 100, 740, 540}' \
+            -e '    set theViewOptions to icon view options of container window' \
+            -e '    set arrangement of theViewOptions to not arranged' \
+            -e '    set icon size of theViewOptions to 128' \
+            -e '    set background picture of theViewOptions to file ".background:background.png"' \
+            -e "    set position of item \"$appname\" of container window to {135, 185}" \
+            -e '    set position of item "Applications" of container window to {405, 185}' \
+            -e '    close' \
+            -e '    open' \
+            -e '    update without registering applications' \
+            -e '    delay 3' \
+            -e '    close' \
+            -e '  end tell' \
+            -e 'end tell'
+
+          # 6. Unmount
+          hdiutil detach "$device" -quiet
+
+          # 7. Convert to compressed read-only DMG
+          hdiutil convert /tmp/osc-rw.dmg -format UDZO -imagekey zlib-level=9 \
+            -o "$output-v$version-macos-universal.dmg"
 
       - name: Package (Linux)
         if: runner.os == 'Linux'
@@ -144,7 +208,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.goos }}
-          path: "OSC-Voting-v*.zip"
+          path: "OSC-Voting-v*"
           if-no-files-found: error
 
   release:
@@ -164,11 +228,15 @@ jobs:
           body: |
             ### Installing
 
-            - **macOS:** The app is unsigned. If macOS says it is damaged and offers only "Move to Trash", open Terminal and run:
-              ```
-              xattr -d com.apple.quarantine ~/Downloads/OSC-Voting.app
-              ```
-              Then double-click to open normally.
+            - **macOS:** Open the `.dmg`, drag **OSC Voting** to the Applications folder, then eject the disk image. The app is unsigned, so Gatekeeper will block it on first launch. Two ways to fix this:
+              - **Recommended — download with curl** (no quarantine flag is set):
+                ```
+                curl -LJO https://github.com/michal-bartak/OSC-Votes/releases/download/${{ needs.prepare.outputs.tag }}/OSC-Voting-${{ needs.prepare.outputs.tag }}-macos-universal.dmg
+                ```
+              - **Already downloaded via browser** — run once in Terminal after dragging to Applications:
+                ```
+                xattr -d com.apple.quarantine /Applications/OSC-Voting.app
+                ```
             - **Windows:** SmartScreen may warn; choose **More info → Run anyway**.
             - **Linux:** Install runtime libs `libgtk-3-0` and `libwebkit2gtk-4.1-0` if needed.
           files: dist/*

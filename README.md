@@ -34,7 +34,7 @@ Get the latest release from the [Releases page](../../releases).
 | Platform | File |
 |----------|------|
 | Windows | `OSC-Voting-vX.X.X-windows-amd64.zip` → extract, run `OSC-Voting.exe` |
-| macOS | `OSC-Voting-vX.X.X-darwin-universal.zip` → extract, move to Applications |
+| macOS | `OSC-Voting-vX.X.X-macos-universal.dmg` → open, drag to Applications |
 | Linux | `OSC-Voting-vX.X.X-linux-amd64.zip` → extract, run `OSC-Voting` |
 
 ## Installing
@@ -43,26 +43,26 @@ Get the latest release from the [Releases page](../../releases).
 SmartScreen may warn on first launch. Click **More info → Run anyway**.
 
 ### macOS
-macOS blocks unsigned apps and shows *"OSC Voting can't be opened"* with no option other than Move to Trash. This is a Gatekeeper quarantine flag added automatically when the zip is downloaded — the app is not actually damaged.
+Internet Browsers and some other apps that participate in Apple's quarantine system adds quarantine flags to downloaded but unsigned files (like **OSC Voting**). It may be worked around several ways:
 
-**Fix — run once in Terminal after extracting the zip:**
+**Option 1 - download with curl (recommended, no quarantine flag is set):**
 ```bash
-xattr -d com.apple.quarantine ~/Downloads/OSC-Voting.app
+curl -LJO https://github.com/michal-bartak/OSC-Votes/releases/latest/download/OSC-Voting-vX.X.X-macos-universal.dmg
 ```
-Then double-click the app normally. You won't need to do this again.
+Open the downloaded `.dmg` normally — no further steps needed.
 
-If you moved the app to a different folder, adjust the path accordingly:
+**Option 2 — already downloaded via browser:**
+Open the .dmg, drag the app to Applications, then run once in Terminal:
 ```bash
 xattr -d com.apple.quarantine /Applications/OSC-Voting.app
 ```
+After that you can run app normally. You won't need to do this again.
 
 ### Linux
 Install runtime dependencies if the app fails to start:
 ```bash
 sudo apt install libgtk-3-0 libwebkit2gtk-4.0-0
 ```
-
-
 
 ## Building from source
 
