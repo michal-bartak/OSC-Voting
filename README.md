@@ -35,7 +35,8 @@ Get the latest release from the [Releases page](../../releases).
 |----------|------|
 | Windows | `OSC-Voting-vX.X.X-windows-amd64.zip` → extract, run `OSC-Voting.exe` |
 | macOS | `OSC-Voting-vX.X.X-macos-universal.dmg` → open, drag to Applications |
-| Linux | `OSC-Voting-vX.X.X-linux-amd64.zip` → extract, run `OSC-Voting` |
+| Linux (Debian/Ubuntu) | `OSC-Voting-vX.X.X-linux-amd64.deb` → `sudo apt install ./OSC-Voting-*.deb` |
+| Linux (Fedora/RHEL) | `OSC-Voting-vX.X.X-linux-amd64.rpm` → `sudo dnf install ./OSC-Voting-*.rpm` |
 
 ## Installing
 
@@ -59,9 +60,23 @@ xattr -d com.apple.quarantine /Applications/OSC-Voting.app
 After that you can run app normally. You won't need to do this again.
 
 ### Linux
-Install runtime dependencies if the app fails to start:
+The packages declare runtime dependencies, so your package manager will install them automatically.
+
+**Debian / Ubuntu:**
 ```bash
-sudo apt install libgtk-3-0 libwebkit2gtk-4.0-0
+sudo apt install ./OSC-Voting-vX.X.X-linux-amd64.deb
+```
+
+**Fedora / RHEL / openSUSE:**
+```bash
+sudo dnf install ./OSC-Voting-vX.X.X-linux-amd64.rpm
+```
+
+If the app fails to start despite the package being installed, install the runtime libraries manually:
+```bash
+sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0          # Debian/Ubuntu 24.04+
+sudo dnf install gtk3 webkit2gtk4.1                       # Fedora 38+
+sudo dnf install gtk3 webkit2gtk3                         # Fedora 37 and older / RHEL 9
 ```
 
 ## Building from source
@@ -70,6 +85,18 @@ sudo apt install libgtk-3-0 libwebkit2gtk-4.0-0
 - [Go 1.21+](https://go.dev/dl/)
 - [Node.js 18+ with npm](https://nodejs.org)
 - [Wails v2](https://wails.io): `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
+
+**Linux build dependencies** (headers needed for `wails dev` / `wails build`):
+
+```bash
+# Fedora 38+ / modern distros (WebKit 4.1 only)
+sudo dnf install gtk3-devel webkit2gtk4.1-devel gcc-c++ pkgconf-pkg-config
+
+# Debian/Ubuntu 24.04+
+sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
+```
+
+On older Linux distros that still ship only WebKit 4.0 (e.g. Ubuntu 22.04, RHEL 9), remove `"build:tags": "webkit2_41"` from `wails.json` and install the 4.0 dev package instead (`libwebkit2gtk-4.0-dev` or `webkit2gtk3-devel`).
 
 ```bash
 git clone https://github.com/michal-bartak/OSC-Votings.git

@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { LoopMode, SortOrder } from './VotingPage';
 
 interface BottomBarProps {
@@ -94,6 +95,13 @@ const StopIcon = () => (
   </svg>
 );
 
+const SORT_OPTIONS: { value: SortOrder; label: string }[] = [
+  { value: 'id', label: 'Default' },
+  { value: 'vote-desc', label: 'Votes ↓' },
+  { value: 'vote-asc', label: 'Votes ↑' },
+  { value: 'title', label: 'Title A–Z' },
+];
+
 export default function BottomBar({
   playingTitle, isPaused, sortOrder,
   hasPrev, hasNext,
@@ -102,6 +110,27 @@ export default function BottomBar({
   hasUnvoted, onJumpToFirstUnvoted, onJumpToPlaying,
 }: BottomBarProps) {
   const isPlaying = !!playingTitle && !isPaused;
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
+  const currentSortLabel = SORT_OPTIONS.find(o => o.value === sortOrder)?.label ?? 'Default';
+
+  useEffect(() => {
+    if (!sortOpen) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setSortOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSortOpen(false);
+    };
+    window.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('mousedown', onPointerDown);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [sortOpen]);
 
   return (
     <div className="bottom-bar">
@@ -153,18 +182,39 @@ export default function BottomBar({
 
       <div className="bar-divider" />
 
-      <div className="sort-controls">
+      <div className="sort-controls" ref={sortRef}>
         <span className="sort-label">Sort</span>
-        <select
-          className="sort-select"
-          value={sortOrder}
-          onChange={e => onSortChange(e.target.value as SortOrder)}
-        >
-          <option value="id">Default</option>
-          <option value="vote-desc">Votes ↓</option>
-          <option value="vote-asc">Votes ↑</option>
-          <option value="title">Title A–Z</option>
-        </select>
+        <div className="sort-dropdown">
+          <button
+            type="button"
+            className="sort-select"
+            aria-haspopup="listbox"
+            aria-expanded={sortOpen}
+            onClick={() => setSortOpen(open => !open)}
+          >
+            {currentSortLabel}
+          </button>
+          {sortOpen && (
+            <ul className="sort-dropdown-menu" role="listbox">
+              {SORT_OPTIONS.map(option => (
+                <li key={option.value} role="presentation">
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={sortOrder === option.value}
+                    className={`sort-dropdown-item${sortOrder === option.value ? ' sort-dropdown-item--active' : ''}`}
+                    onClick={() => {
+                      onSortChange(option.value);
+                      setSortOpen(false);
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );
