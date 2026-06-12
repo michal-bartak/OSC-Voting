@@ -1,5 +1,6 @@
 /* ── Theme variables ────────────────────────────────────── */
 :root {
+  color-scheme: dark;
   --bg-base:          #111111;
   --bg-header:        #1a1a1a;
   --bg-card:          #1e1e1e;
@@ -25,6 +26,7 @@
 }
 
 [data-theme="light"] {
+  color-scheme: light;
   --bg-base:          #f0f2f5;
   --bg-header:        #ffffff;
   --bg-card:          #ffffff;
@@ -504,6 +506,7 @@ body { background: var(--bg-base); margin: 0; }
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
+  position: relative;
 }
 .sort-label {
   font-size: 11px;
@@ -511,19 +514,61 @@ body { background: var(--bg-base); margin: 0; }
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+.sort-dropdown {
+  position: relative;
+}
 .sort-select {
   background: var(--bg-input);
   border: 1px solid var(--border-btn);
   border-radius: 6px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 12px;
   padding: 4px 8px;
   cursor: pointer;
   outline: none;
   transition: border-color 0.15s, color 0.15s;
+  min-width: 88px;
+  text-align: left;
 }
-.sort-select:hover { border-color: var(--border-hover); color: var(--text-secondary); }
+.sort-select:hover { border-color: var(--border-hover); color: var(--text-primary); }
 .sort-select:focus { border-color: var(--accent); }
+.sort-dropdown-menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 4px);
+  min-width: 100%;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border-btn);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  z-index: 100;
+}
+.sort-dropdown-item {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 6px 8px;
+  text-align: left;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s;
+}
+.sort-dropdown-item:hover {
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+.sort-dropdown-item--active {
+  background: var(--accent-hover-bg);
+  color: var(--accent);
+  font-weight: 600;
+}
 
 /* ── SC player ──────────────────────────────────────────── */
 .sc-player-wrap {

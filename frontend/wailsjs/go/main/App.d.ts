@@ -14,6 +14,8 @@ export function GetSongs():Promise<main.AppState>;
 
 export function IsLoggedIn():Promise<boolean>;
 
+export function IsSystemDark():Promise<boolean>;
+
 export function Login(arg1:string,arg2:string):Promise<void>;
 
 export function Logout():Promise<void>;

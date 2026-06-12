@@ -26,6 +26,10 @@ export function IsLoggedIn() {
   return window['go']['main']['App']['IsLoggedIn']();
 }
 
+export function IsSystemDark() {
+  return window['go']['main']['App']['IsSystemDark']();
+}
+
 export function Login(arg1, arg2) {
   return window['go']['main']['App']['Login'](arg1, arg2);
 }
