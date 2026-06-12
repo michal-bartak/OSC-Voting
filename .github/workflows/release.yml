@@ -140,7 +140,7 @@ jobs:
           pip3 install --quiet --break-system-packages Pillow
           printf '%s\n' \
             'from PIL import Image, ImageDraw' \
-            'W, H = 540, 400' \
+            'W, H = 540, 440' \
             'img = Image.new("RGBA", (W, H), (255, 212, 160, 255))' \
             'draw = ImageDraw.Draw(img)' \
             'TRI_W, TRI_H, TRI_GAP, TRI_N = 15, 17, 8, 5' \
@@ -176,7 +176,7 @@ jobs:
             -e '    set current view of container window to icon view' \
             -e '    set toolbar visible of container window to false' \
             -e '    set statusbar visible of container window to false' \
-            -e '    set bounds of container window to {200, 100, 740, 500}' \
+            -e '    set bounds of container window to {200, 100, 740, 540}' \
             -e '    set theViewOptions to icon view options of container window' \
             -e '    set arrangement of theViewOptions to not arranged' \
             -e '    set icon size of theViewOptions to 128' \
