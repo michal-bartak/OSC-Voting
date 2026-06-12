@@ -141,11 +141,14 @@ jobs:
           printf '%s\n' \
             'from PIL import Image, ImageDraw' \
             'W, H = 540, 340' \
-            'img = Image.new("RGB", (W, H), (28, 28, 28))' \
+            'img = Image.new("RGBA", (W, H), (255, 212, 160, 255))' \
             'draw = ImageDraw.Draw(img)' \
-            'draw.rectangle([210, 169, 318, 181], fill=(110, 110, 110))' \
-            'draw.polygon([(315, 155), (346, 175), (315, 195)], fill=(110, 110, 110))' \
-            'img.save("/tmp/dmg-background.png")' \
+            'TRI_W, TRI_H, TRI_GAP, TRI_N = 15, 17, 8, 5' \
+            'arrow_color = (255, 85, 0, 229)' \
+            'start_x = (209 + 331) / 2 - (TRI_N * TRI_W + (TRI_N-1) * TRI_GAP) / 2' \
+            'cy = 175' \
+            '[draw.polygon([(start_x+i*(TRI_W+TRI_GAP), cy-TRI_H/2), (start_x+i*(TRI_W+TRI_GAP)+TRI_W, cy), (start_x+i*(TRI_W+TRI_GAP), cy+TRI_H/2)], fill=arrow_color) for i in range(TRI_N)]' \
+            'img.convert("RGB").save("/tmp/dmg-background.png")' \
             > /tmp/gen_bg.py
           python3 /tmp/gen_bg.py
 
