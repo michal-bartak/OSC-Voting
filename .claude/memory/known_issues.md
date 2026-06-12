@@ -40,7 +40,7 @@ if idx := strings.Index(trackURL, "?"); idx != -1 {
 
 **Attempt:** Used AppleScript (`osascript`) to find an existing SoundCloud tab in Chrome/Safari and navigate it in-place (to avoid opening multiple tabs).
 
-**Problem:** macOS shows a permission dialog: "OSC Vote wants to control Google Chrome." User didn't want to grant Automation access.
+**Problem:** macOS shows a permission dialog: "OSC Voting wants to control Google Chrome." User didn't want to grant Automation access.
 
 **Decision:** Reverted to simple `runtime.BrowserOpenURL`. Multiple SC tabs is the accepted behaviour.
 

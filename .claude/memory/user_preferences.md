@@ -7,7 +7,7 @@ metadata:
   originSessionId: 19358bd9-1049-44e2-98d1-de520d816356
 ---
 
-Michal Bartak (michal.bartak@betsys.com) is building OSC Vote as a personal tool for a music challenge he participates in. He is comfortable with technical decisions and gives clear, concise feedback.
+Michal Bartak is building OSC Voting as a personal tool for a music challenge he participates in. He is comfortable with technical decisions and gives clear, concise feedback.
 
 **Communication style:**
 - Prefers short, direct responses — doesn't need lengthy explanations

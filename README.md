@@ -48,7 +48,7 @@ Internet Browsers and some other apps that participate in Apple's quarantine sys
 
 **Option 1 - download with curl (recommended, no quarantine flag is set):**
 ```bash
-curl -LJO https://github.com/michal-bartak/OSC-Votes/releases/latest/download/OSC-Voting-vX.X.X-macos-universal.dmg
+curl -LJO https://github.com/michal-bartak/OSC-Voting/releases/latest/download/OSC-Voting-vX.X.X-macos-universal.dmg
 ```
 Open the downloaded `.dmg` normally — no further steps needed.
 
@@ -99,8 +99,8 @@ sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
 On older Linux distros that still ship only WebKit 4.0 (e.g. Ubuntu 22.04, RHEL 9), remove `"build:tags": "webkit2_41"` from `wails.json` and install the 4.0 dev package instead (`libwebkit2gtk-4.0-dev` or `webkit2gtk3-devel`).
 
 ```bash
-git clone https://github.com/michal-bartak/OSC-Votings.git
-cd OSC-Votings
+git clone https://github.com/michal-bartak/OSC-Voting.git
+cd OSC-Voting
 wails build -platform windows/amd64    # or: darwin/universal  linux/amd64
 ```
 

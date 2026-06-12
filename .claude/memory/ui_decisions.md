@@ -86,7 +86,7 @@ Custom 1024×1024 PNG at `build/appicon.png`: dark `#1a1a1a` rounded square, 5 o
 
 ## Wails window
 
-Title: `"OSC Vote v" + appVersion` (from VERSION file)
+Title: `"OSC Voting v" + appVersion` (from VERSION file)
 Size: 1200×820, min 900×600
 Background: `rgba(18, 18, 18, 1)` to avoid white flash on load
 

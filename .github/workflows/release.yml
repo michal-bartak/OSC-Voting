@@ -211,7 +211,7 @@ jobs:
           binary="build/bin/$output"
           pkgname="osc-voting"
           description="Desktop voting app for the OneSynthChallenge"
-          url="https://github.com/michal-bartak/OSC-Votes"
+          url="https://github.com/michal-bartak/OSC-Voting"
           maintainer="Michal Bartak <maxym.srpl@gmail.com>"
 
           # Install packaging tools
@@ -288,7 +288,7 @@ jobs:
             - **macOS:** Open the `.dmg`, drag **OSC Voting** to the Applications folder, then eject the disk image. The app is unsigned, so Gatekeeper will block it on first launch. Two ways to fix this:
               - **Recommended — download with curl** (no quarantine flag is set):
                 ```
-                curl -LJO https://github.com/michal-bartak/OSC-Votes/releases/download/${{ needs.prepare.outputs.tag }}/OSC-Voting-${{ needs.prepare.outputs.tag }}-macos-universal.dmg
+                curl -LJO https://github.com/michal-bartak/OSC-Voting/releases/download/${{ needs.prepare.outputs.tag }}/OSC-Voting-${{ needs.prepare.outputs.tag }}-macos-universal.dmg
                 ```
               - **Already downloaded via browser** — run once in Terminal after dragging to Applications:
                 ```
