@@ -140,13 +140,13 @@ jobs:
           pip3 install --quiet --break-system-packages Pillow
           printf '%s\n' \
             'from PIL import Image, ImageDraw' \
-            'W, H = 540, 340' \
+            'W, H = 540, 400' \
             'img = Image.new("RGBA", (W, H), (255, 212, 160, 255))' \
             'draw = ImageDraw.Draw(img)' \
             'TRI_W, TRI_H, TRI_GAP, TRI_N = 15, 17, 8, 5' \
             'arrow_color = (255, 85, 0, 229)' \
             'start_x = (209 + 331) / 2 - (TRI_N * TRI_W + (TRI_N-1) * TRI_GAP) / 2' \
-            'cy = 175' \
+            'cy = 185' \
             '[draw.polygon([(start_x+i*(TRI_W+TRI_GAP), cy-TRI_H/2), (start_x+i*(TRI_W+TRI_GAP)+TRI_W, cy), (start_x+i*(TRI_W+TRI_GAP), cy+TRI_H/2)], fill=arrow_color) for i in range(TRI_N)]' \
             'img.convert("RGB").save("/tmp/dmg-background.png")' \
             > /tmp/gen_bg.py
@@ -176,13 +176,13 @@ jobs:
             -e '    set current view of container window to icon view' \
             -e '    set toolbar visible of container window to false' \
             -e '    set statusbar visible of container window to false' \
-            -e '    set bounds of container window to {200, 120, 740, 460}' \
+            -e '    set bounds of container window to {200, 100, 740, 500}' \
             -e '    set theViewOptions to icon view options of container window' \
             -e '    set arrangement of theViewOptions to not arranged' \
             -e '    set icon size of theViewOptions to 128' \
             -e '    set background picture of theViewOptions to file ".background:background.png"' \
-            -e "    set position of item \"$appname\" of container window to {135, 175}" \
-            -e '    set position of item "Applications" of container window to {405, 175}' \
+            -e "    set position of item \"$appname\" of container window to {135, 185}" \
+            -e '    set position of item "Applications" of container window to {405, 185}' \
             -e '    close' \
             -e '    open' \
             -e '    update without registering applications' \
