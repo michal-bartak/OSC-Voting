@@ -15,6 +15,7 @@ interface Props {
 export interface SongItemHandle {
   play(): void;
   pause(): void;
+  getIframe(): HTMLIFrameElement | null;
 }
 
 const SongItem = forwardRef<SongItemHandle, Props>(
@@ -34,6 +35,7 @@ const SongItem = forwardRef<SongItemHandle, Props>(
     useImperativeHandle(ref, () => ({
       play() { widgetRef.current?.play(); },
       pause() { widgetRef.current?.pause(); },
+      getIframe() { return iframeRef.current; },
     }));
 
     const handleIframeLoad = () => {
@@ -63,16 +65,6 @@ const SongItem = forwardRef<SongItemHandle, Props>(
         widgetRef.current?.pause();
       }
     }, [isPlaying]);
-
-    useEffect(() => {
-      const handleWindowBlur = () => {
-        if (document.activeElement === iframeRef.current) {
-          onPlayRef.current(song.id);
-        }
-      };
-      window.addEventListener('blur', handleWindowBlur);
-      return () => window.removeEventListener('blur', handleWindowBlur);
-    }, [song.id]);
 
     const handleVote = async (points: number) => {
       if (voting) return;

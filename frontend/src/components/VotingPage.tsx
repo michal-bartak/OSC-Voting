@@ -97,6 +97,23 @@ export default function VotingPage({ onLogout }: Props) {
     setIsPaused(false);
   };
 
+  // Single blur listener for all SoundCloud iframes (WebView2 workaround: SC Widget
+  // PLAY events are unreliable; we detect iframe clicks via window blur instead).
+  const handlePlayRef = useRef(handlePlay);
+  handlePlayRef.current = handlePlay;
+  useEffect(() => {
+    const onBlur = () => {
+      for (const [id, handle] of Object.entries(songRefs.current)) {
+        if (handle.getIframe() === document.activeElement) {
+          handlePlayRef.current(id);
+          break;
+        }
+      }
+    };
+    window.addEventListener('blur', onBlur);
+    return () => window.removeEventListener('blur', onBlur);
+  }, []);
+
   const handleFinish = (id: string) => {
     if (loopMode === 'song') {
       setTimeout(() => songRefs.current[id]?.play(), 100);

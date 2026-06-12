@@ -167,7 +167,7 @@ jobs:
 
           # 4. Mount
           hdiutil attach -readwrite -noverify /tmp/osc-rw.dmg | tee /tmp/hdiutil-attach.txt
-          device=$(grep "^/dev" /tmp/hdiutil-attach.txt | tail -1 | awk '{print $1}')
+          device=$(grep "^/dev/disk" /tmp/hdiutil-attach.txt | head -1 | awk '{print $1}')
           echo "Mounted as: $device"
           [ -n "$device" ] || { echo "ERROR: could not determine device"; exit 1; }
           sleep 3
