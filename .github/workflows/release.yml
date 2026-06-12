@@ -131,15 +131,69 @@ jobs:
           version=$(tr -d ' \n\r' < VERSION)
           app=$(find build/bin -maxdepth 1 -name "*.app" -type d | head -1)
           [ -n "$app" ] || { echo "ERROR: no .app bundle found in build/bin"; exit 1; }
-          echo "Found bundle: $app"
+          appname="$(basename "$app")"
+
+          # Remove any stale darwin zip from earlier builds
+          rm -f "$output"-v*-darwin-universal.zip
+
+          # 1. Generate background image: dark background + grey arrow
+          pip3 install --quiet --break-system-packages Pillow
+          printf '%s\n' \
+            'from PIL import Image, ImageDraw' \
+            'W, H = 540, 340' \
+            'img = Image.new("RGB", (W, H), (28, 28, 28))' \
+            'draw = ImageDraw.Draw(img)' \
+            'draw.rectangle([210, 169, 318, 181], fill=(110, 110, 110))' \
+            'draw.polygon([(315, 155), (346, 175), (315, 195)], fill=(110, 110, 110))' \
+            'img.save("/tmp/dmg-background.png")' \
+            > /tmp/gen_bg.py
+          python3 /tmp/gen_bg.py
+
+          # 2. Stage: app bundle + Applications symlink + hidden background folder
           staging=$(mktemp -d)
           cp -r "$app" "$staging/"
           ln -s /Applications "$staging/Applications"
-          hdiutil create \
-            -volname "OSC Voting" \
-            -srcfolder "$staging" \
-            -ov -format UDZO \
-            "$output-v$version-macos-universal.dmg"
+          mkdir "$staging/.background"
+          cp /tmp/dmg-background.png "$staging/.background/background.png"
+
+          # 3. Create writable DMG
+          hdiutil create -volname "OSC Voting" -srcfolder "$staging" \
+            -ov -format UDRW -size 200m /tmp/osc-rw.dmg
+
+          # 4. Mount
+          device=$(hdiutil attach -readwrite -noverify /tmp/osc-rw.dmg | \
+            grep "^/dev" | tail -1 | awk '{print $1}')
+          sleep 3
+
+          # 5. Set window layout via Finder AppleScript
+          osascript \
+            -e 'tell application "Finder"' \
+            -e '  tell disk "OSC Voting"' \
+            -e '    open' \
+            -e '    set current view of container window to icon view' \
+            -e '    set toolbar visible of container window to false' \
+            -e '    set statusbar visible of container window to false' \
+            -e '    set bounds of container window to {200, 120, 740, 460}' \
+            -e '    set theViewOptions to icon view options of container window' \
+            -e '    set arrangement of theViewOptions to not arranged' \
+            -e '    set icon size of theViewOptions to 128' \
+            -e '    set background picture of theViewOptions to file ".background:background.png"' \
+            -e "    set position of item \"$appname\" of container window to {135, 175}" \
+            -e '    set position of item "Applications" of container window to {405, 175}' \
+            -e '    close' \
+            -e '    open' \
+            -e '    update without registering applications' \
+            -e '    delay 3' \
+            -e '    close' \
+            -e '  end tell' \
+            -e 'end tell'
+
+          # 6. Unmount
+          hdiutil detach "$device" -quiet
+
+          # 7. Convert to compressed read-only DMG
+          hdiutil convert /tmp/osc-rw.dmg -format UDZO -imagekey zlib-level=9 \
+            -o "$output-v$version-macos-universal.dmg"
 
       - name: Package (Linux)
         if: runner.os == 'Linux'
