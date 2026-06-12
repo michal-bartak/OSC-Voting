@@ -86,6 +86,18 @@ sudo dnf install gtk3 webkit2gtk3                         # Fedora 37 and older 
 - [Node.js 18+ with npm](https://nodejs.org)
 - [Wails v2](https://wails.io): `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
 
+**Linux build dependencies** (headers needed for `wails dev` / `wails build`):
+
+```bash
+# Fedora 38+ / modern distros (WebKit 4.1 only)
+sudo dnf install gtk3-devel webkit2gtk4.1-devel gcc-c++ pkgconf-pkg-config
+
+# Debian/Ubuntu 24.04+
+sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
+```
+
+On older Linux distros that still ship only WebKit 4.0 (e.g. Ubuntu 22.04, RHEL 9), remove `"build:tags": "webkit2_41"` from `wails.json` and install the 4.0 dev package instead (`libwebkit2gtk-4.0-dev` or `webkit2gtk3-devel`).
+
 ```bash
 git clone https://github.com/michal-bartak/OSC-Votings.git
 cd OSC-Votings

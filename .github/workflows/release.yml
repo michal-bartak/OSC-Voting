@@ -71,6 +71,7 @@ jobs:
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
+      # WebKit 4.1 dev headers (Ubuntu 24.04+); pairs with build:tags in wails.json
       - name: Install Linux WebView dependencies
         if: runner.os == 'Linux'
         run: |
@@ -89,6 +90,7 @@ jobs:
           mv wails.json.tmp wails.json
           echo "Set wails.json productVersion → $version"
 
+      # build:tags webkit2_41 in wails.json selects webkit2gtk-4.1 at link time
       - name: Build
         run: wails build -platform ${{ matrix.platform }} -clean
 
@@ -230,7 +232,7 @@ jobs:
           # Copy icon
           cp build/appicon.png /tmp/osc-voting.png
 
-          # Build .deb
+          # Build .deb — runtime deps must match the WebKit version linked at build time
           fpm -s dir -t deb \
             -n "$pkgname" -v "$version" \
             --description "$description" \
@@ -245,7 +247,7 @@ jobs:
             /tmp/osc-voting.desktop=/usr/share/applications/osc-voting.desktop \
             /tmp/osc-voting.png=/usr/share/icons/hicolor/256x256/apps/osc-voting.png
 
-          # Build .rpm
+          # Build .rpm — runtime deps must match the WebKit version linked at build time
           fpm -s dir -t rpm \
             -n "$pkgname" -v "$version" \
             --description "$description" \
@@ -253,6 +255,7 @@ jobs:
             --maintainer "$maintainer" \
             --license "MIT" \
             --depends gtk3 \
+            --depends webkit2gtk4.1 \
             --architecture x86_64 \
             --package "$output-v$version-linux-amd64.rpm" \
             "$binary=/usr/bin/$output" \
