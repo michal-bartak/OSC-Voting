@@ -21,8 +21,8 @@ const THEMES = [
   { value: 'system', label: 'System' },
 ];
 
-const SIZE_VALUES = ['minimal', 'small', 'medium', 'large'] as const;
-const SIZE_LABELS = ['Minimal', 'Small', 'Medium', 'Large'];
+const SIZE_VALUES = ['minimal', 'medium', 'large'] as const;
+const SIZE_LABELS = ['Minimal', 'Medium', 'Large'];
 
 export default function SettingsPopup({ initialEmail, initialDisplayEmail, initialPassword, initialTheme, initialAutoScroll, initialPlayerSize, onSave, onAutoScrollChange, onPlayerSizeChange, onClose }: Props) {
   const [email, setEmail] = useState(initialEmail);
@@ -123,10 +123,10 @@ export default function SettingsPopup({ initialEmail, initialDisplayEmail, initi
               type="range"
               className="size-slider"
               min={0}
-              max={3}
+              max={2}
               step={1}
               value={sizeIndex}
-              style={{ '--slider-pct': `${(sizeIndex / 3) * 100}%` } as React.CSSProperties}
+              style={{ '--slider-pct': `${(sizeIndex / 2) * 100}%` } as React.CSSProperties}
               onChange={e => handlePlayerSizeChange(Number(e.target.value))}
             />
             <div className="size-slider-ticks">

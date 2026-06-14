@@ -659,6 +659,11 @@ body { background: var(--bg-base); margin: 0; }
   cursor: pointer;
   display: block;
 }
+.size-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: transparent;
+}
 .size-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 16px;

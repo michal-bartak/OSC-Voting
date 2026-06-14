@@ -18,5 +18,5 @@ type Config struct {
 	Password            string `json:"password,omitempty"`
 	Theme               string `json:"theme,omitempty"`        // "day" | "night" | "system" (default)
 	DisplayEmail        string `json:"displayEmail,omitempty"` // if set, shown instead of real email in UI
-	PlayerSize          string `json:"playerSize,omitempty"`   // "minimal" | "small" | "medium" | "large" (default)
+	PlayerSize          string `json:"playerSize,omitempty"`   // "minimal" | "medium" | "large" (default)
 }

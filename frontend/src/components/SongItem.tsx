@@ -3,12 +3,11 @@ import { OpenCommentInBrowser, SubmitVote } from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
 import { SCWidget } from '../types';
 
-export type PlayerSize = 'minimal' | 'small' | 'medium' | 'large';
+export type PlayerSize = 'minimal' | 'medium' | 'large';
 
 const PLAYER_HEIGHT: Record<PlayerSize, number> = {
-  minimal: 44,
-  small: 70,
-  medium: 94,
+  minimal: 20,
+  medium: 95,
   large: 120,
 };
 
@@ -18,6 +17,7 @@ interface Props {
   isDark: boolean;
   playerSize?: PlayerSize;
   onPlay: (id: string) => void;
+  onPause: (id: string) => void;
   onFinish: (id: string) => void;
   onVote: (id: string, points: number) => void;
 }
@@ -29,12 +29,14 @@ export interface SongItemHandle {
 }
 
 const SongItem = forwardRef<SongItemHandle, Props>(
-  ({ song, isPlaying, isDark, playerSize = 'large', onPlay, onFinish, onVote }, ref) => {
+  ({ song, isPlaying, isDark, playerSize = 'large', onPlay, onPause, onFinish, onVote }, ref) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const widgetRef = useRef<SCWidget | null>(null);
     const positionRef = useRef(0);
     const onPlayRef = useRef(onPlay);
     onPlayRef.current = onPlay;
+    const onPauseRef = useRef(onPause);
+    onPauseRef.current = onPause;
     const onFinishRef = useRef(onFinish);
     onFinishRef.current = onFinish;
     const [voteError, setVoteError] = useState('');
@@ -55,6 +57,7 @@ const SongItem = forwardRef<SongItemHandle, Props>(
       positionRef.current = 0;
 
       widget.bind(window.SC.Widget.Events.PLAY,   () => onPlayRef.current(song.id));
+      widget.bind(window.SC.Widget.Events.PAUSE,  () => onPauseRef.current(song.id));
       widget.bind(window.SC.Widget.Events.FINISH, () => onFinishRef.current(song.id));
       widget.bind(window.SC.Widget.Events.PLAY_PROGRESS, (data: unknown) => {
         const d = data as { currentPosition?: number };
@@ -143,15 +146,15 @@ const SongItem = forwardRef<SongItemHandle, Props>(
         id={`song-item-${song.id}`}
         className={`song-item${isPlaying ? ' song-item--playing' : ''}${isMinimal ? ' song-item--minimal' : ''}`}
       >
-        <div className="song-header">
-          <span className="song-title">{song.title}</span>
-          {!isMinimal && (
+        {!isMinimal && (
+          <div className="song-header">
+            <span className="song-title">{song.title}</span>
             <div className="song-actions">
               {voteButtons}
               {commentBtn}
             </div>
-          )}
-        </div>
+          </div>
+        )}
         {voteError && <div className="vote-error">{voteError}</div>}
         <div className={`sc-player-wrap${isDark ? ' sc-player-wrap--dark' : ''}`}>
           {artworkEl}

@@ -142,6 +142,11 @@ export default function VotingPage({ onLogout }: Props) {
     setIsPaused(true);
   };
 
+  const handleEmbedPause = (id: string) => {
+    if (id !== playingId) return;
+    setIsPaused(true);
+  };
+
   const handleResume = () => {
     if (!playingId) return;
     songRefs.current[playingId]?.play();
@@ -295,6 +300,7 @@ export default function VotingPage({ onLogout }: Props) {
               isDark={isDark}
               playerSize={playerSize}
               onPlay={handlePlay}
+              onPause={handleEmbedPause}
               onFinish={handleFinish}
               onVote={handleVote}
               ref={el => {
