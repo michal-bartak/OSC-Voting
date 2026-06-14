@@ -3,12 +3,11 @@ import { OpenCommentInBrowser, SubmitVote } from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
 import { SCWidget } from '../types';
 
-export type PlayerSize = 'minimal' | 'small' | 'medium' | 'large';
+export type PlayerSize = 'minimal' | 'medium' | 'large';
 
 const PLAYER_HEIGHT: Record<PlayerSize, number> = {
-  minimal: 44,
-  small: 70,
-  medium: 94,
+  minimal: 20,
+  medium: 95,
   large: 120,
 };
 
@@ -143,15 +142,15 @@ const SongItem = forwardRef<SongItemHandle, Props>(
         id={`song-item-${song.id}`}
         className={`song-item${isPlaying ? ' song-item--playing' : ''}${isMinimal ? ' song-item--minimal' : ''}`}
       >
-        <div className="song-header">
-          <span className="song-title">{song.title}</span>
-          {!isMinimal && (
+        {!isMinimal && (
+          <div className="song-header">
+            <span className="song-title">{song.title}</span>
             <div className="song-actions">
               {voteButtons}
               {commentBtn}
             </div>
-          )}
-        </div>
+          </div>
+        )}
         {voteError && <div className="vote-error">{voteError}</div>}
         <div className={`sc-player-wrap${isDark ? ' sc-player-wrap--dark' : ''}`}>
           {artworkEl}
