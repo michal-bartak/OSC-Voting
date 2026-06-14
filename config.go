@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -24,7 +25,7 @@ func (a *App) GetConfig() (*Config, error) {
 	}
 	var cfg Config
 	if err := json.Unmarshal(data, &cfg); err != nil {
-		return &Config{AutoScrollToUnvoted: false}, nil
+		return nil, fmt.Errorf("config corrupted: %w", err)
 	}
 	return &cfg, nil
 }

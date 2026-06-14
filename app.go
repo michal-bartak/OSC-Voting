@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -22,7 +24,10 @@ type App struct {
 }
 
 func NewApp() *App {
-	client, _ := newHTTPClient()
+	client, err := newHTTPClient()
+	if err != nil {
+		log.Fatal(err)
+	}
 	return &App{httpClient: client}
 }
 
@@ -39,6 +44,7 @@ func (a *App) IsLoggedIn() bool {
 		return false
 	}
 	defer resp.Body.Close()
+	_, _ = io.Copy(io.Discard, resp.Body)
 	return resp.Request.URL.Path == "/voting"
 }
 
@@ -53,6 +59,7 @@ func (a *App) Login(email, password string) error {
 		return err
 	}
 	defer resp.Body.Close()
+	_, _ = io.Copy(io.Discard, resp.Body)
 	if resp.Request.URL.Path != "/voting" {
 		return fmt.Errorf("invalid credentials")
 	}
@@ -63,7 +70,9 @@ func (a *App) Login(email, password string) error {
 	if cfg, err := a.GetConfig(); err == nil {
 		cfg.Email = email
 		cfg.Password = password
-		a.SaveConfig(*cfg) //nolint:errcheck
+		if err := a.SaveConfig(*cfg); err != nil {
+			log.Printf("warning: could not save credentials: %v", err)
+		}
 	}
 	return nil
 }
@@ -116,6 +125,7 @@ func (a *App) SubmitVote(songID string, points int) error {
 		return err
 	}
 	defer resp.Body.Close()
+	_, _ = io.Copy(io.Discard, resp.Body)
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("save-vote returned status %d", resp.StatusCode)
 	}
