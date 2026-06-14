@@ -152,6 +152,16 @@ func (a *App) UpdateAutoScroll(enabled bool) error {
 	return a.SaveConfig(*cfg)
 }
 
+// UpdatePlayerSize persists only the playerSize field.
+func (a *App) UpdatePlayerSize(size string) error {
+	cfg, err := a.GetConfig()
+	if err != nil {
+		return err
+	}
+	cfg.PlayerSize = size
+	return a.SaveConfig(*cfg)
+}
+
 func (a *App) OpenCommentInBrowser(trackURL string, positionMs float64) {
 	totalSecs := int(positionMs) / 1000
 	mins := totalSecs / 60

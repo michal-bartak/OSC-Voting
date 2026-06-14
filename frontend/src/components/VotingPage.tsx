@@ -3,7 +3,7 @@ import { AppName, GetConfig, GetSongs, Logout } from '../../wailsjs/go/main/App'
 import { main } from '../../wailsjs/go/models';
 import BottomBar from './BottomBar';
 import SettingsPopup from './SettingsPopup';
-import SongItem, { SongItemHandle } from './SongItem';
+import SongItem, { SongItemHandle, PlayerSize } from './SongItem';
 
 export type SortOrder = 'id' | 'vote-desc' | 'vote-asc' | 'title';
 export type LoopMode = 'none' | 'playlist' | 'song';
@@ -34,6 +34,7 @@ export default function VotingPage({ onLogout }: Props) {
   const [storedDisplayEmail, setStoredDisplayEmail] = useState('');
   const [storedPassword, setStoredPassword] = useState('');
   const [storedTheme, setStoredTheme] = useState('system');
+  const [playerSize, setPlayerSize] = useState<PlayerSize>('large');
   const [appTitle, setAppTitle] = useState('OSC Voting');
   const [isDark, setIsDark] = useState(
     () => document.documentElement.getAttribute('data-theme') === 'dark'
@@ -81,6 +82,7 @@ export default function VotingPage({ onLogout }: Props) {
         setStoredDisplayEmail(cfg.displayEmail ?? '');
         setStoredPassword(cfg.password ?? '');
         setStoredTheme(cfg.theme ?? 'system');
+        setPlayerSize((cfg.playerSize as PlayerSize) ?? 'large');
         if (cfg.autoScrollToUnvoted) {
           setTimeout(() => scrollToFirstUnvoted(state.songs), 150);
         }
@@ -269,6 +271,7 @@ export default function VotingPage({ onLogout }: Props) {
           initialPassword={storedPassword}
           initialTheme={storedTheme}
           initialAutoScroll={autoScroll}
+          initialPlayerSize={playerSize}
           onSave={(email, password, theme) => {
             setStoredEmail(email);
             setStoredPassword(password);
@@ -279,6 +282,7 @@ export default function VotingPage({ onLogout }: Props) {
             setAutoScroll(val);
             if (val) scrollToFirstUnvoted(songs);
           }}
+          onPlayerSizeChange={(size) => setPlayerSize(size as PlayerSize)}
           onClose={() => setSettingsOpen(false)}
         />
       )}
@@ -289,6 +293,7 @@ export default function VotingPage({ onLogout }: Props) {
               song={song}
               isPlaying={playingId === song.id}
               isDark={isDark}
+              playerSize={playerSize}
               onPlay={handlePlay}
               onFinish={handleFinish}
               onVote={handleVote}
