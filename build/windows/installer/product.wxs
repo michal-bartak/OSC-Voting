@@ -24,16 +24,14 @@
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch OSC Voting" />
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
 
+    <!-- WixUI's ExitDlg already publishes DoAction to WIXUI_EXITDIALOGOPTIONALCHECKBOXACTION
+         when Finish is clicked with the checkbox ticked — no custom Publish needed -->
+    <UIRef Id="WixUI_InstallDir" />
+
     <!-- ── Launch after install ───────────────────────────── -->
-    <!-- UIRef and Publish must be in the same UI section for ExitDlg to resolve -->
     <Property Id="WixShellExecTarget" Value="[#OSCVotingExe]" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXACTION" Value="LaunchApp" />
     <CustomAction Id="LaunchApp" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />
-    <UI>
-      <UIRef Id="WixUI_InstallDir" />
-      <Publish Dialog="ExitDlg" Control="Finish" Event="DoAction" Value="LaunchApp" Order="1">
-        WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed
-      </Publish>
-    </UI>
 
     <!-- ── Layout ─────────────────────────────────────────── -->
     <Directory Id="TARGETDIR" Name="SourceDir">
