@@ -17,7 +17,6 @@
 
     <!-- ── UI ──────────────────────────────────────────────── -->
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
-    <UIRef Id="WixUI_InstallDir" />
     <WixVariable Id="WixUIBannerBmp" Value="$(var.BannerBmp)" />
     <WixVariable Id="WixUIDialogBmp" Value="$(var.DialogBmp)" />
 
@@ -26,10 +25,11 @@
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
 
     <!-- ── Launch after install ───────────────────────────── -->
-    <!-- WixShellExec launches the app when the user clicks Finish, not during install -->
+    <!-- UIRef and Publish must be in the same UI section for ExitDlg to resolve -->
     <Property Id="WixShellExecTarget" Value="[#OSCVotingExe]" />
     <CustomAction Id="LaunchApp" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />
     <UI>
+      <UIRef Id="WixUI_InstallDir" />
       <Publish Dialog="ExitDlg" Control="Finish" Event="DoAction" Value="LaunchApp" Order="1">
         WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed
       </Publish>
