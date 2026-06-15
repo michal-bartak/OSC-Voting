@@ -26,16 +26,14 @@
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
 
     <!-- ── Launch after install ───────────────────────────── -->
-    <CustomAction Id="LaunchApp"
-                  FileKey="OSCVotingExe"
-                  ExeCommand=""
-                  Return="asyncNoWait"
-                  Impersonate="yes" />
-    <InstallExecuteSequence>
-      <Custom Action="LaunchApp" After="InstallFinalize">
+    <!-- WixShellExec launches the app when the user clicks Finish, not during install -->
+    <Property Id="WixShellExecTarget" Value="[#OSCVotingExe]" />
+    <CustomAction Id="LaunchApp" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />
+    <UI>
+      <Publish Dialog="ExitDlg" Control="Finish" Event="DoAction" Value="LaunchApp" Order="1">
         WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed
-      </Custom>
-    </InstallExecuteSequence>
+      </Publish>
+    </UI>
 
     <!-- ── Layout ─────────────────────────────────────────── -->
     <Directory Id="TARGETDIR" Name="SourceDir">

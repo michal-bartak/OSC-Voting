@@ -124,26 +124,29 @@ jobs:
 
           # Generate UI bitmaps from the app icon
           Add-Type -AssemblyName System.Drawing
-          $src = [System.Drawing.Image]::FromFile("$PWD\build\appicon.png")
-          $bg  = [System.Drawing.Color]::FromArgb(255, 30, 30, 30)
+          $src    = [System.Drawing.Image]::FromFile("$PWD\build\appicon.png")
+          $orange = [System.Drawing.Color]::FromArgb(255, 255, 212, 160)   # same as macOS DMG
+          $gray   = [System.Drawing.Color]::FromArgb(255, 240, 240, 240)   # Windows default dialog bg
+          $sm     = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
+          $im     = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
 
           # Banner: 493x58 — top strip on every installer page
           $bmp = New-Object System.Drawing.Bitmap(493, 58)
           $g   = [System.Drawing.Graphics]::FromImage($bmp)
-          $g.SmoothingMode    = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
-          $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
-          $g.Clear($bg)
+          $g.SmoothingMode = $sm; $g.InterpolationMode = $im
+          $g.Clear($orange)
           $g.DrawImage($src, 493 - 52, 5, 46, 46)
           $g.Dispose(); $bannerBmp = "$env:TEMP\wix-banner.bmp"
           $bmp.Save($bannerBmp, [System.Drawing.Imaging.ImageFormat]::Bmp); $bmp.Dispose()
 
-          # Dialog: 493x312 — left panel on Welcome/Finish screens
+          # Dialog: 493x312 — Welcome/Finish screens
+          # Left 164px: orange panel with icon; right 329px: Windows default gray
           $bmp = New-Object System.Drawing.Bitmap(493, 312)
           $g   = [System.Drawing.Graphics]::FromImage($bmp)
-          $g.SmoothingMode    = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
-          $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
-          $g.Clear($bg)
-          $g.DrawImage($src, (164 - 140) / 2, (312 - 140) / 2, 140, 140)
+          $g.SmoothingMode = $sm; $g.InterpolationMode = $im
+          $g.Clear($gray)
+          $g.FillRectangle((New-Object System.Drawing.SolidBrush($orange)), 0, 0, 164, 312)
+          $g.DrawImage($src, (164 - 130) / 2, (312 - 130) / 2, 130, 130)
           $g.Dispose(); $dialogBmp = "$env:TEMP\wix-dialog.bmp"
           $bmp.Save($dialogBmp, [System.Drawing.Imaging.ImageFormat]::Bmp); $bmp.Dispose()
           $src.Dispose()
@@ -156,7 +159,7 @@ jobs:
             -dDialogBmp="$dialogBmp" `
             -o product.wixobj $wxs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & "$wix\light.exe" -nologo -ext WixUIExtension -o $msi product.wixobj
+          & "$wix\light.exe" -nologo -ext WixUIExtension -ext WixUtilExtension -o $msi product.wixobj
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Fix icon and re-sign (macOS)
