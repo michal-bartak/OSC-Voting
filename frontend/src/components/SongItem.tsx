@@ -57,17 +57,17 @@ const SongItem = forwardRef<SongItemHandle, Props>(
       const el = containerRef.current;
       if (!el) return;
       const observer = new IntersectionObserver(
-        ([entry]) => setNearViewport(entry.isIntersecting),
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setNearViewport(true);
+            observer.disconnect(); // loaded once, never unload
+          }
+        },
         { rootMargin: '300px 0px' },
       );
       observer.observe(el);
       return () => observer.disconnect();
     }, []);
-
-    // Null out the stale widget reference when the iframe unmounts.
-    useEffect(() => {
-      if (!showIframe) widgetRef.current = null;
-    }, [showIframe]);
 
     useImperativeHandle(ref, () => ({
       play()          { widgetRef.current?.play(); },
