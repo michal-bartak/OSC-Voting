@@ -265,7 +265,7 @@ jobs:
             /tmp/osc-voting.desktop=/usr/share/applications/osc-voting.desktop \
             /tmp/osc-voting.png=/usr/share/icons/hicolor/256x256/apps/osc-voting.png
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist-${{ matrix.goos }}
           path: "OSC-Voting-v*"
@@ -275,7 +275,7 @@ jobs:
     needs: [prepare, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: dist-*
           merge-multiple: true
