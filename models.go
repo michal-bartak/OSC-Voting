@@ -13,7 +13,8 @@ type AppState struct {
 }
 
 type Config struct {
-	AutoScrollToUnvoted bool   `json:"autoScrollToUnvoted"`
+	AutoScrollToUnvoted *bool  `json:"autoScrollToUnvoted,omitempty"`
+	FollowPlayback      *bool  `json:"followPlayback,omitempty"`
 	Email               string `json:"email,omitempty"`
 	Password            string `json:"password,omitempty"`
 	Theme               string `json:"theme,omitempty"`        // "day" | "night" | "system" (default)

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AppName, GetConfig, GetSongs, Logout } from '../../wailsjs/go/main/App';
+import { AppName, AppVersion, GetConfig, GetSongs, Logout } from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
+import AboutPopup from './AboutPopup';
 import BottomBar from './BottomBar';
 import SettingsPopup from './SettingsPopup';
 import SongItem, { SongItemHandle, PlayerSize } from './SongItem';
@@ -29,7 +30,10 @@ export default function VotingPage({ onLogout }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [autoScroll, setAutoScroll] = useState(false);
+  const [followPlayback, setFollowPlayback] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [appVersion, setAppVersion] = useState('');
   const [storedEmail, setStoredEmail] = useState('');
   const [storedDisplayEmail, setStoredDisplayEmail] = useState('');
   const [storedPassword, setStoredPassword] = useState('');
@@ -58,6 +62,7 @@ export default function VotingPage({ onLogout }: Props) {
   }, [sortedSongs]);
 
   useEffect(() => { AppName().then(setAppTitle); }, []);
+  useEffect(() => { AppVersion().then(setAppVersion); }, []);
 
   // Track data-theme changes (set by applyTheme()) to keep isDark in sync.
   useEffect(() => {
@@ -77,7 +82,8 @@ export default function VotingPage({ onLogout }: Props) {
       .then(([state, cfg]) => {
         setSongs(state.songs);
         setChallengeNumber(state.challengeNumber);
-        setAutoScroll(cfg.autoScrollToUnvoted);
+        setAutoScroll(cfg.autoScrollToUnvoted ?? true);
+        setFollowPlayback(cfg.followPlayback ?? true);
         setStoredEmail(cfg.email ?? '');
         setStoredDisplayEmail(cfg.displayEmail ?? '');
         setStoredPassword(cfg.password ?? '');
@@ -98,6 +104,9 @@ export default function VotingPage({ onLogout }: Props) {
     setPlayingId(id);
     setIsPaused(false);
   };
+
+  const followPlaybackRef = useRef(followPlayback);
+  followPlaybackRef.current = followPlayback;
 
   // Single blur listener for all SoundCloud iframes (WebView2 workaround: SC Widget
   // PLAY events are unreliable; we detect iframe clicks via window blur instead).
@@ -127,6 +136,9 @@ export default function VotingPage({ onLogout }: Props) {
       setPlayingId(next.id);
       setIsPaused(false);
       setTimeout(() => songRefs.current[next.id]?.play(), 100);
+      if (followPlaybackRef.current) {
+        document.getElementById(`song-item-${next.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     } else if (loopMode === 'playlist' && next?.id === id) {
       // single-song playlist: replay it
       setTimeout(() => songRefs.current[id]?.play(), 100);
@@ -257,6 +269,13 @@ export default function VotingPage({ onLogout }: Props) {
         </div>
         <div className="header-right">
           <span className="vote-progress">{voted}/{total} voted</span>
+          <button className="settings-btn" onClick={() => setAboutOpen(true)} title="About">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="8" cy="8" r="6.5"/>
+              <line x1="8" y1="7" x2="8" y2="11.5"/>
+              <circle cx="8" cy="4.5" r="0.75" fill="currentColor" stroke="none"/>
+            </svg>
+          </button>
           <button className="settings-btn" onClick={() => setSettingsOpen(true)} title="Settings">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
               <line x1="2" y1="4" x2="14" y2="4"/>
@@ -269,6 +288,9 @@ export default function VotingPage({ onLogout }: Props) {
           </button>
         </div>
       </header>
+      {aboutOpen && (
+        <AboutPopup version={appVersion} onClose={() => setAboutOpen(false)} />
+      )}
       {settingsOpen && (
         <SettingsPopup
           initialEmail={storedEmail}
@@ -276,6 +298,7 @@ export default function VotingPage({ onLogout }: Props) {
           initialPassword={storedPassword}
           initialTheme={storedTheme}
           initialAutoScroll={autoScroll}
+          initialFollowPlayback={followPlayback}
           initialPlayerSize={playerSize}
           onSave={(email, password, theme) => {
             setStoredEmail(email);
@@ -287,6 +310,7 @@ export default function VotingPage({ onLogout }: Props) {
             setAutoScroll(val);
             if (val) scrollToFirstUnvoted(songs);
           }}
+          onFollowPlaybackChange={(val) => setFollowPlayback(val)}
           onPlayerSizeChange={(size) => setPlayerSize(size as PlayerSize)}
           onClose={() => setSettingsOpen(false)}
         />

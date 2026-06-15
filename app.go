@@ -31,7 +31,12 @@ func NewApp() *App {
 	return &App{httpClient: client}
 }
 
-func (a *App) AppName() string { return appName }
+func (a *App) AppName() string    { return appName }
+func (a *App) AppVersion() string { return appVersion }
+
+func (a *App) OpenURL(url string) {
+	runtime.BrowserOpenURL(a.ctx, url)
+}
 
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
@@ -148,7 +153,17 @@ func (a *App) UpdateAutoScroll(enabled bool) error {
 	if err != nil {
 		return err
 	}
-	cfg.AutoScrollToUnvoted = enabled
+	cfg.AutoScrollToUnvoted = boolPtr(enabled)
+	return a.SaveConfig(*cfg)
+}
+
+// UpdateFollowPlayback persists only the followPlayback field.
+func (a *App) UpdateFollowPlayback(enabled bool) error {
+	cfg, err := a.GetConfig()
+	if err != nil {
+		return err
+	}
+	cfg.FollowPlayback = boolPtr(enabled)
 	return a.SaveConfig(*cfg)
 }
 

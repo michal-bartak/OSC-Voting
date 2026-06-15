@@ -246,6 +246,68 @@ body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-se
 .cancel-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .modal-actions .login-btn { flex: 2; margin-top: 0; }
 
+/* ── About popup ────────────────────────────────────────── */
+.about-card { width: 340px; }
+.about-hero {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.about-app-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.about-version {
+  font-size: 12px;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+.about-desc {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0 0 18px;
+}
+.about-desc strong { color: var(--text-primary); }
+.about-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.about-link-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 8px 12px;
+  text-align: left;
+  transition: border-color 0.15s, color 0.15s;
+}
+.about-link-btn:hover { border-color: var(--accent); color: var(--accent); }
+.about-author {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+}
+.about-author strong { color: var(--text-secondary); }
+.about-author-ai { color: var(--text-faint); font-size: 12px; }
+.about-courtesy {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-faint);
+  margin: 0;
+}
+
 /* ── Settings popup sections ────────────────────────────── */
 .settings-section { margin-bottom: 24px; }
 .settings-section-label {

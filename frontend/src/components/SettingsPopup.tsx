@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { GetConfigPath, Login, UpdateAutoScroll, UpdatePlayerSize, UpdateTheme } from '../../wailsjs/go/main/App';
+import { GetConfigPath, Login, UpdateAutoScroll, UpdateFollowPlayback, UpdatePlayerSize, UpdateTheme } from '../../wailsjs/go/main/App';
 import { applyTheme } from '../theme';
 
 interface Props {
@@ -8,9 +8,11 @@ interface Props {
   initialPassword: string;
   initialTheme: string;
   initialAutoScroll: boolean;
+  initialFollowPlayback: boolean;
   initialPlayerSize?: string;
   onSave: (email: string, password: string, theme: string) => void;
   onAutoScrollChange?: (val: boolean) => void;
+  onFollowPlaybackChange?: (val: boolean) => void;
   onPlayerSizeChange?: (size: string) => void;
   onClose: () => void;
 }
@@ -24,11 +26,12 @@ const THEMES = [
 const SIZE_VALUES = ['minimal', 'medium', 'large'] as const;
 const SIZE_LABELS = ['Minimal', 'Medium', 'Large'];
 
-export default function SettingsPopup({ initialEmail, initialDisplayEmail, initialPassword, initialTheme, initialAutoScroll, initialPlayerSize, onSave, onAutoScrollChange, onPlayerSizeChange, onClose }: Props) {
+export default function SettingsPopup({ initialEmail, initialDisplayEmail, initialPassword, initialTheme, initialAutoScroll, initialFollowPlayback, initialPlayerSize, onSave, onAutoScrollChange, onFollowPlaybackChange, onPlayerSizeChange, onClose }: Props) {
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState(initialPassword);
   const [theme, setTheme] = useState(initialTheme || 'system');
   const [autoScroll, setAutoScroll] = useState(initialAutoScroll);
+  const [followPlayback, setFollowPlayback] = useState(initialFollowPlayback);
   const [playerSize, setPlayerSize] = useState(initialPlayerSize || 'large');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -67,6 +70,12 @@ export default function SettingsPopup({ initialEmail, initialDisplayEmail, initi
     setAutoScroll(val);
     UpdateAutoScroll(val).catch(() => {});
     onAutoScrollChange?.(val);
+  };
+
+  const handleFollowPlaybackToggle = (val: boolean) => {
+    setFollowPlayback(val);
+    UpdateFollowPlayback(val).catch(() => {});
+    onFollowPlaybackChange?.(val);
   };
 
   const handlePlayerSizeChange = (idx: number) => {
@@ -153,6 +162,15 @@ export default function SettingsPopup({ initialEmail, initialDisplayEmail, initi
               onChange={e => handleAutoScrollToggle(e.target.checked)}
             />
             <span>Auto-scroll to first unvoted</span>
+          </label>
+          <label className="settings-toggle">
+            <input
+              type="checkbox"
+              className="settings-toggle-checkbox"
+              checked={followPlayback}
+              onChange={e => handleFollowPlaybackToggle(e.target.checked)}
+            />
+            <span>Follow playback</span>
           </label>
         </div>
 

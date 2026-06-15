@@ -15,10 +15,12 @@ func (a *App) GetConfigPath() string {
 	return appConfigFilePath()
 }
 
+func boolPtr(b bool) *bool { return &b }
+
 func (a *App) GetConfig() (*Config, error) {
 	data, err := os.ReadFile(appConfigFilePath())
 	if os.IsNotExist(err) {
-		return &Config{AutoScrollToUnvoted: false}, nil
+		return &Config{AutoScrollToUnvoted: boolPtr(true), FollowPlayback: boolPtr(true)}, nil
 	}
 	if err != nil {
 		return nil, err
@@ -26,6 +28,12 @@ func (a *App) GetConfig() (*Config, error) {
 	var cfg Config
 	if err := json.Unmarshal(data, &cfg); err != nil {
 		return nil, fmt.Errorf("config corrupted: %w", err)
+	}
+	if cfg.AutoScrollToUnvoted == nil {
+		cfg.AutoScrollToUnvoted = boolPtr(true)
+	}
+	if cfg.FollowPlayback == nil {
+		cfg.FollowPlayback = boolPtr(true)
 	}
 	return &cfg, nil
 }
