@@ -48,15 +48,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-24.04
-            platform: linux/amd64
-            goos: linux
+          # - os: ubuntu-24.04
+          #   platform: linux/amd64
+          #   goos: linux
           - os: windows-latest
             platform: windows/amd64
             goos: windows
-          - os: macos-latest
-            platform: darwin/universal
-            goos: darwin
+          # - os: macos-latest
+          #   platform: darwin/universal
+          #   goos: darwin
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
@@ -82,6 +82,10 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
 
+      - name: Install WiX Toolset
+        if: runner.os == 'Windows'
+        run: choco install wixtoolset --no-progress -y
+
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0
 
@@ -103,7 +107,59 @@ jobs:
         run: |
           $output  = (jq -r '.outputfilename' wails.json)
           $version = (Get-Content VERSION -Raw).Trim()
-          Compress-Archive -Path "build\bin\$output.exe" -DestinationPath "$output-v$version-windows-amd64.zip"
+
+          # MSI installer via WiX
+          $m = [regex]::Match($version, '^(\d+)(?:\.(\d+))?(?:\.(\d+))?')
+          $wixVersion = "$($m.Groups[1].Value).$($m.Groups[2].Value -replace '^$','0').$($m.Groups[3].Value -replace '^$','0').0"
+          $wix = Get-ChildItem "C:\Program Files (x86)\WiX Toolset*\bin","C:\Program Files\WiX Toolset*\bin" -ErrorAction SilentlyContinue |
+                   Select-Object -First 1 -ExpandProperty FullName
+          if (-not $wix) { throw "WiX Toolset bin directory not found" }
+          $wxs      = "build\windows\installer\product.wxs"
+          $exePath  = "$PWD\build\bin\$output.exe"
+          $iconPath = "$PWD\build\windows\icon.ico"
+          $msi      = "$output-v$version-windows-amd64.msi"
+
+          # Generate UI bitmaps from the app icon
+          Add-Type -AssemblyName System.Drawing
+          $src    = [System.Drawing.Image]::FromFile("$PWD\build\appicon.png")
+          $orange = [System.Drawing.Color]::FromArgb(255, 255, 212, 160)   # same as macOS DMG
+          $gray   = [System.Drawing.Color]::FromArgb(255, 240, 240, 240)   # Windows default dialog bg
+          $sm     = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
+          $im     = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+
+          # Banner: 493x58 — top strip on every installer page
+          $bmp = New-Object System.Drawing.Bitmap(493, 58)
+          $g   = [System.Drawing.Graphics]::FromImage($bmp)
+          $g.SmoothingMode = $sm; $g.InterpolationMode = $im
+          $g.Clear($orange)
+          $g.DrawImage($src, 493 - 52, 5, 46, 46)
+          $g.Dispose(); $bannerBmp = "$env:TEMP\wix-banner.bmp"
+          $bmp.Save($bannerBmp, [System.Drawing.Imaging.ImageFormat]::Bmp); $bmp.Dispose()
+
+          # Dialog: 493x312 — Welcome/Finish screens
+          # Left 164px: orange panel with icon; right 329px: Windows default gray
+          $bmp = New-Object System.Drawing.Bitmap(493, 312)
+          $g   = [System.Drawing.Graphics]::FromImage($bmp)
+          $g.SmoothingMode = $sm; $g.InterpolationMode = $im
+          $g.Clear($gray)
+          $g.FillRectangle((New-Object System.Drawing.SolidBrush($orange)), 0, 0, 164, 312)
+          $g.DrawImage($src, (164 - 130) / 2, (312 - 130) / 2, 130, 130)
+          $g.Dispose(); $dialogBmp = "$env:TEMP\wix-dialog.bmp"
+          $bmp.Save($dialogBmp, [System.Drawing.Imaging.ImageFormat]::Bmp); $bmp.Dispose()
+          $src.Dispose()
+
+          $licenseRtf = "$PWD\build\windows\installer\License.rtf"
+          & "$wix\candle.exe" -nologo -arch x64 `
+            -dVersion="$wixVersion" `
+            -dExePath="$exePath" `
+            -dIconPath="$iconPath" `
+            -dBannerBmp="$bannerBmp" `
+            -dDialogBmp="$dialogBmp" `
+            -dLicenseRtf="$licenseRtf" `
+            -o product.wixobj $wxs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & "$wix\light.exe" -nologo -spdb -ext WixUIExtension -o $msi product.wixobj
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Fix icon and re-sign (macOS)
         if: runner.os == 'macOS'
