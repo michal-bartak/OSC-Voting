@@ -16,7 +16,8 @@
     <Property Id="ARPHELPLINK" Value="https://github.com/michal-bartak/OSC-Voting" />
 
     <!-- ── UI ──────────────────────────────────────────────── -->
-    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <!-- Point to the PARENT so "OSC Voting" is always appended regardless of user's choice -->
+    <Property Id="WIXUI_INSTALLDIR" Value="ProgramFiles64Folder" />
     <WixVariable Id="WixUIBannerBmp"   Value="$(var.BannerBmp)" />
     <WixVariable Id="WixUIDialogBmp"   Value="$(var.DialogBmp)" />
     <WixVariable Id="WixUILicenseRtf"  Value="$(var.LicenseRtf)" />
@@ -25,14 +26,16 @@
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch OSC Voting" />
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
 
-    <!-- WixUI's ExitDlg already publishes DoAction to WIXUI_EXITDIALOGOPTIONALCHECKBOXACTION
-         when Finish is clicked with the checkbox ticked — no custom Publish needed -->
     <UIRef Id="WixUI_InstallDir" />
 
     <!-- ── Launch after install ───────────────────────────── -->
+    <!-- Fires after install completes (ExecuteAction), just before ExitDlg appears.
+         asyncNoWait means the app starts in the background while the user clicks Finish. -->
     <Property Id="WixShellExecTarget" Value="[#OSCVotingExe]" />
-    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXACTION" Value="LaunchApp" />
     <CustomAction Id="LaunchApp" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />
+    <InstallUISequence>
+      <Custom Action="LaunchApp" After="ExecuteAction">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed</Custom>
+    </InstallUISequence>
 
     <!-- ── Layout ─────────────────────────────────────────── -->
     <Directory Id="TARGETDIR" Name="SourceDir">
