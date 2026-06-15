@@ -31,6 +31,7 @@ export interface SongItemHandle {
 
 const SongItem = forwardRef<SongItemHandle, Props>(
   ({ song, isPlaying, isDark, playerSize = 'large', onPlay, onPause, onFinish, onVote }, ref) => {
+    const containerRef = useRef<HTMLDivElement>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const widgetRef = useRef<SCWidget | null>(null);
     const positionRef = useRef(0);
@@ -46,6 +47,27 @@ const SongItem = forwardRef<SongItemHandle, Props>(
     const [artworkUrl, setArtworkUrl] = useState<string | null>(null);
     const [description, setDescription] = useState<string | null>(null);
     const [descOpen, setDescOpen] = useState(false);
+    const [nearViewport, setNearViewport] = useState(false);
+
+    // Only load the SC iframe when the song is near the viewport.
+    // Keeps the number of live SoundCloud players (and their postMessage traffic) small.
+    const showIframe = nearViewport || isPlaying;
+
+    useEffect(() => {
+      const el = containerRef.current;
+      if (!el) return;
+      const observer = new IntersectionObserver(
+        ([entry]) => setNearViewport(entry.isIntersecting),
+        { rootMargin: '300px 0px' },
+      );
+      observer.observe(el);
+      return () => observer.disconnect();
+    }, []);
+
+    // Null out the stale widget reference when the iframe unmounts.
+    useEffect(() => {
+      if (!showIframe) widgetRef.current = null;
+    }, [showIframe]);
 
     useImperativeHandle(ref, () => ({
       play()          { widgetRef.current?.play(); },
@@ -197,6 +219,7 @@ const SongItem = forwardRef<SongItemHandle, Props>(
     return (
       <div
         id={`song-item-${song.id}`}
+        ref={containerRef}
         className={`song-item${isPlaying ? ' song-item--playing' : ''}${isMinimal ? ' song-item--minimal' : ''}`}
       >
         {!isMinimal && (
@@ -212,18 +235,22 @@ const SongItem = forwardRef<SongItemHandle, Props>(
         <div className={`sc-player-wrap${isDark ? ' sc-player-wrap--dark' : ''}`}>
           {artworkWrap}
           {inlineDescBtn}
-          <iframe
-            ref={iframeRef}
-            id={`sc-player-${song.id}`}
-            src={embedUrl}
-            width="100%"
-            height={h}
-            scrolling="no"
-            frameBorder="0"
-            allow="autoplay"
-            onLoad={handleIframeLoad}
-            className="sc-iframe"
-          />
+          {showIframe ? (
+            <iframe
+              ref={iframeRef}
+              id={`sc-player-${song.id}`}
+              src={embedUrl}
+              width="100%"
+              height={h}
+              scrolling="no"
+              frameBorder="0"
+              allow="autoplay"
+              onLoad={handleIframeLoad}
+              className="sc-iframe"
+            />
+          ) : (
+            <div className="sc-iframe sc-iframe--placeholder" style={{ height: h }} />
+          )}
           {isMinimal && (
             <div className="song-actions song-actions--minimal">
               {voteButtons}

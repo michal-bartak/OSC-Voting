@@ -753,10 +753,14 @@ body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-se
   flex: 1;
   min-width: 0;
   background-color: #ffffff;
-  will-change: filter;
 }
 .sc-player-wrap--dark .sc-iframe {
   filter: invert(0.9) hue-rotate(180deg);
+  will-change: filter;
+}
+.sc-iframe--placeholder {
+  background-color: var(--bg-input);
+  flex: 1;
 }
 
 /* ── Minimal song item ──────────────────────────────────── */
