@@ -22,21 +22,7 @@
     <WixVariable Id="WixUIDialogBmp"   Value="$(var.DialogBmp)" />
     <WixVariable Id="WixUILicenseRtf"  Value="$(var.LicenseRtf)" />
 
-    <!-- Pre-tick the "Launch OSC Voting" checkbox on the Finish screen -->
-    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch OSC Voting" />
-    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
-
     <UIRef Id="WixUI_InstallDir" />
-
-    <!-- ── Launch after install ───────────────────────────── -->
-    <!-- Schedule AFTER ExitDialog so the app launches only once the user clicks Finish -->
-    <Property Id="WixShellExecTarget" Value="[#OSCVotingExe]" />
-    <CustomAction Id="LaunchApp" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />
-    <InstallUISequence>
-      <Custom Action="LaunchApp" After="ExitDialog">
-        WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed
-      </Custom>
-    </InstallUISequence>
 
     <!-- ── Layout ─────────────────────────────────────────── -->
     <Directory Id="TARGETDIR" Name="SourceDir">

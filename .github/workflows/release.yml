@@ -158,7 +158,7 @@ jobs:
             -dLicenseRtf="$licenseRtf" `
             -o product.wixobj $wxs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & "$wix\light.exe" -nologo -spdb -ext WixUIExtension -ext WixUtilExtension -o $msi product.wixobj
+          & "$wix\light.exe" -nologo -spdb -ext WixUIExtension -o $msi product.wixobj
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Fix icon and re-sign (macOS)
