@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*"
+           Name="OSC Voting"
+           Language="1033"
+           Version="$(var.Version)"
+           Manufacturer="Michal Bartak"
+           UpgradeCode="{3E7F1A2B-9C4D-4E8F-B5A3-6D0C2E8F4A1B}">
+
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of OSC Voting is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Icon Id="AppIcon" SourceFile="$(var.IconPath)" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/michal-bartak/OSC-Voting" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLFOLDER" Name="OSC Voting" />
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="AppMenuFolder" Name="OSC Voting" />
+      </Directory>
+    </Directory>
+
+    <ComponentGroup Id="MainFiles" Directory="INSTALLFOLDER">
+      <Component Id="MainExe" Guid="*">
+        <File Id="OSCVotingExe" Source="$(var.ExePath)" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <DirectoryRef Id="AppMenuFolder">
+      <Component Id="StartMenuShortcut" Guid="*">
+        <Shortcut Id="AppShortcut"
+                  Name="OSC Voting"
+                  Description="Voting app for the OneSynthChallenge"
+                  Target="[INSTALLFOLDER]OSC-Voting.exe"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="AppIcon" />
+        <RemoveFolder Id="RemoveAppMenuFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" Key="Software\MichalBartak\OSCVoting"
+                       Name="installed" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <Feature Id="MainFeature" Level="1">
+      <ComponentGroupRef Id="MainFiles" />
+      <ComponentRef Id="StartMenuShortcut" />
+    </Feature>
+
+  </Product>
+</Wix>

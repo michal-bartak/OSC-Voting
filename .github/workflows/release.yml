@@ -82,6 +82,10 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
 
+      - name: Install WiX Toolset
+        if: runner.os == 'Windows'
+        run: choco install wixtoolset --no-progress -y
+
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0
 
@@ -103,7 +107,26 @@ jobs:
         run: |
           $output  = (jq -r '.outputfilename' wails.json)
           $version = (Get-Content VERSION -Raw).Trim()
+
+          # Portable zip
           Compress-Archive -Path "build\bin\$output.exe" -DestinationPath "$output-v$version-windows-amd64.zip"
+
+          # MSI installer via WiX
+          $m = [regex]::Match($version, '^(\d+)(?:\.(\d+))?(?:\.(\d+))?')
+          $wixVersion = "$($m.Groups[1].Value).$($m.Groups[2].Value -replace '^$','0').$($m.Groups[3].Value -replace '^$','0').0"
+          $wix = "C:\Program Files (x86)\WiX Toolset v3.11\bin"
+          $wxs  = "build\windows\installer\product.wxs"
+          $exePath  = "$PWD\build\bin\$output.exe"
+          $iconPath = "$PWD\build\windows\icon.ico"
+          $msi  = "$output-v$version-windows-amd64.msi"
+          & "$wix\candle.exe" -nologo -arch x64 `
+            -dVersion="$wixVersion" `
+            -dExePath="$exePath" `
+            -dIconPath="$iconPath" `
+            -o product.wixobj $wxs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & "$wix\light.exe" -nologo -ext WixUIExtension -o $msi product.wixobj
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Fix icon and re-sign (macOS)
         if: runner.os == 'macOS'
