@@ -3,11 +3,21 @@ import { OpenCommentInBrowser, SubmitVote } from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
 import { SCWidget } from '../types';
 
+export type PlayerSize = 'minimal' | 'medium' | 'large';
+
+const PLAYER_HEIGHT: Record<PlayerSize, number> = {
+  minimal: 20,
+  medium: 95,
+  large: 120,
+};
+
 interface Props {
   song: main.Song;
   isPlaying: boolean;
   isDark: boolean;
+  playerSize?: PlayerSize;
   onPlay: (id: string) => void;
+  onPause: (id: string) => void;
   onFinish: (id: string) => void;
   onVote: (id: string, points: number) => void;
 }
@@ -19,12 +29,14 @@ export interface SongItemHandle {
 }
 
 const SongItem = forwardRef<SongItemHandle, Props>(
-  ({ song, isPlaying, isDark, onPlay, onFinish, onVote }, ref) => {
+  ({ song, isPlaying, isDark, playerSize = 'large', onPlay, onPause, onFinish, onVote }, ref) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const widgetRef = useRef<SCWidget | null>(null);
     const positionRef = useRef(0);
     const onPlayRef = useRef(onPlay);
     onPlayRef.current = onPlay;
+    const onPauseRef = useRef(onPause);
+    onPauseRef.current = onPause;
     const onFinishRef = useRef(onFinish);
     onFinishRef.current = onFinish;
     const [voteError, setVoteError] = useState('');
@@ -45,6 +57,7 @@ const SongItem = forwardRef<SongItemHandle, Props>(
       positionRef.current = 0;
 
       widget.bind(window.SC.Widget.Events.PLAY,   () => onPlayRef.current(song.id));
+      widget.bind(window.SC.Widget.Events.PAUSE,  () => onPauseRef.current(song.id));
       widget.bind(window.SC.Widget.Events.FINISH, () => onFinishRef.current(song.id));
       widget.bind(window.SC.Widget.Events.PLAY_PROGRESS, (data: unknown) => {
         const d = data as { currentPosition?: number };
@@ -65,6 +78,17 @@ const SongItem = forwardRef<SongItemHandle, Props>(
         widgetRef.current?.pause();
       }
     }, [isPlaying]);
+
+    // WebKit compositing fix: when filter is added/removed, the iframe's
+    // compositing layer may retain stale edge pixels. A translateZ(0) toggle
+    // forces WebKit to flush the layer.
+    useEffect(() => {
+      const wrap = iframeRef.current?.parentElement as HTMLElement | null;
+      if (!wrap) return;
+      wrap.style.transform = 'translateZ(0)';
+      const id = requestAnimationFrame(() => { wrap.style.transform = ''; });
+      return () => cancelAnimationFrame(id);
+    }, [isDark]);
 
     const handleVote = async (points: number) => {
       if (voting) return;
@@ -95,51 +119,74 @@ const SongItem = forwardRef<SongItemHandle, Props>(
       `&auto_play=false&hide_related=true&show_comments=false` +
       `&show_user=true&show_reposts=false&visual=false&color=%23888888&show_artwork=false`;
 
+    const isMinimal = playerSize === 'minimal';
+    const h = PLAYER_HEIGHT[playerSize];
+
+    const artworkEl = artworkUrl
+      ? <img src={artworkUrl} className="sc-artwork" style={{ width: h, height: h }} alt="" />
+      : <div className="sc-artwork sc-artwork--placeholder" style={{ width: h, height: h }} />;
+
+    const voteButtons = (
+      <div className="vote-buttons">
+        {[1, 2, 3, 4, 5].map(n => (
+          <button
+            key={n}
+            className={`vote-btn${song.currentVote === n ? ' vote-btn--active' : ''}${isMinimal ? ' vote-btn--sm' : ''}`}
+            onClick={() => handleVote(n)}
+            disabled={voting}
+            title={`Give ${n} point${n > 1 ? 's' : ''}`}
+          >
+            {n}
+          </button>
+        ))}
+      </div>
+    );
+
+    const commentBtn = (
+      <button
+        className={`comment-btn${isMinimal ? ' comment-btn--sm' : ''}`}
+        onClick={handleComment}
+        title="Comment on SoundCloud at current position"
+      >
+        💬
+      </button>
+    );
+
     return (
-      <div id={`song-item-${song.id}`} className={`song-item${isPlaying ? ' song-item--playing' : ''}`}>
-        <div className="song-header">
-          <span className="song-title">{song.title}</span>
-          <div className="song-actions">
-            <div className="vote-buttons">
-              {[1, 2, 3, 4, 5].map(n => (
-                <button
-                  key={n}
-                  className={`vote-btn${song.currentVote === n ? ' vote-btn--active' : ''}`}
-                  onClick={() => handleVote(n)}
-                  disabled={voting}
-                  title={`Give ${n} point${n > 1 ? 's' : ''}`}
-                >
-                  {n}
-                </button>
-              ))}
+      <div
+        id={`song-item-${song.id}`}
+        className={`song-item${isPlaying ? ' song-item--playing' : ''}${isMinimal ? ' song-item--minimal' : ''}`}
+      >
+        {!isMinimal && (
+          <div className="song-header">
+            <span className="song-title">{song.title}</span>
+            <div className="song-actions">
+              {voteButtons}
+              {commentBtn}
             </div>
-            <button
-              className="comment-btn"
-              onClick={handleComment}
-              title="Comment on SoundCloud at current position"
-            >
-              💬
-            </button>
           </div>
-        </div>
+        )}
         {voteError && <div className="vote-error">{voteError}</div>}
         <div className={`sc-player-wrap${isDark ? ' sc-player-wrap--dark' : ''}`}>
-          {artworkUrl
-            ? <img src={artworkUrl} className="sc-artwork" alt="" />
-            : <div className="sc-artwork sc-artwork--placeholder" />
-          }
+          {artworkEl}
           <iframe
             ref={iframeRef}
             id={`sc-player-${song.id}`}
             src={embedUrl}
             width="100%"
-            height="120"
+            height={h}
             scrolling="no"
             frameBorder="0"
             allow="autoplay"
             onLoad={handleIframeLoad}
             className="sc-iframe"
           />
+          {isMinimal && (
+            <div className="song-actions song-actions--minimal">
+              {voteButtons}
+              {commentBtn}
+            </div>
+          )}
         </div>
       </div>
     );

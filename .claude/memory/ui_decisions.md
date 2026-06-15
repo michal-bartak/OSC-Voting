@@ -31,7 +31,7 @@ Artwork is always rendered as a native `<img>` element **outside** the iframe (s
   .sc-iframe   (flex:1)
 ```
 
-The `-4px` right margin overlaps the artwork over the iframe edge to hide the SC player's internal border-radius / box-shadow corner artifact (see known issues). Always keep this overlap; reducing it brings the artifact back.
+The overlap workaround (`margin-right: -4px`) has been reverted. The underlying artifact (white pixels at the left iframe edge on light→dark switch) is fixed by locking `.sc-iframe { background-color: #ffffff }` — see known issues.
 
 Artwork URL: from `getCurrentSound()` on `READY` event. Falls back to `sound.user.avatar_url` when the track has no artwork set. Both use `-large` suffix replaced with `-t200x200`.
 

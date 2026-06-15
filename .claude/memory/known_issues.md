@@ -92,15 +92,15 @@ $bw.Dispose(); $stream.Dispose(); Write-Host "Done"
 
 **Note:** macOS (.icns) and Linux are generated automatically by Wails from `appicon.png` at build time — no manual step needed.
 
-## SC player corner artifact next to sibling element
+## SC player corner artifact (white pixels) on light→dark theme switch
 
-**Symptom:** When an element (artwork `<img>`) is placed flush against a SoundCloud iframe, bright pixels appear at the junction corner. `overflow: hidden` on the parent does not clip iframe-internal content.
+**Symptom:** After switching from light to dark mode, near-white pixels appear at the left edge of the SC player iframe (where it meets the artwork). Disappears on window resize. Does not appear when starting the app in dark mode.
 
-**Root cause:** The SC player widget has its own internal `border-radius` + `box-shadow` (3D chrome effect) rendered inside the iframe browsing context. These bleed through at the corner regardless of parent clipping.
+**Root cause:** `.sc-iframe` previously used `background-color: var(--bg-card)`. In dark mode `--bg-card` is `#1e1e1e`. The SC player has an internal `border-radius` on its container; the corner pixels outside that radius are transparent in the SC player's context, so the iframe's own background shows through there. With `filter: invert(0.9)` applied, `#1e1e1e` → `~#e1e1e1` (near-white) — visible artifact on dark background. No artifact when starting in dark mode because the filter is applied before the SC player's first composited frame, so those pixels are always rendered correctly.
 
-**Fix:** Apply `margin-right: -4px; position: relative; z-index: 1` to the sibling element so it overlaps the iframe by 4px, covering the artifact. 2px was not enough; 4px is the minimum that fully hides it.
+**Fix:** Lock `.sc-iframe { background-color: #ffffff }` — never theme-variable. White corner pixels + `invert(0.9)` → near-black → invisible on dark background. No color transition on theme switch, no artifact.
 
-**Do not use** `box-shadow: inset` on the parent — it paints a visible stripe along all four edges in dark mode.
+**Do not revert** to `var(--bg-card)` — that re-introduces the artifact on light→dark switch.
 
 ## Sorting iframes: use CSS `order`, not DOM reorder
 

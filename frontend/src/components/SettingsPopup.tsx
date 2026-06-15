@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { GetConfigPath, Login, UpdateAutoScroll, UpdateTheme } from '../../wailsjs/go/main/App';
+import { GetConfigPath, Login, UpdateAutoScroll, UpdatePlayerSize, UpdateTheme } from '../../wailsjs/go/main/App';
 import { applyTheme } from '../theme';
 
 interface Props {
@@ -8,8 +8,10 @@ interface Props {
   initialPassword: string;
   initialTheme: string;
   initialAutoScroll: boolean;
+  initialPlayerSize?: string;
   onSave: (email: string, password: string, theme: string) => void;
   onAutoScrollChange?: (val: boolean) => void;
+  onPlayerSizeChange?: (size: string) => void;
   onClose: () => void;
 }
 
@@ -19,15 +21,21 @@ const THEMES = [
   { value: 'system', label: 'System' },
 ];
 
-export default function SettingsPopup({ initialEmail, initialDisplayEmail, initialPassword, initialTheme, initialAutoScroll, onSave, onAutoScrollChange, onClose }: Props) {
+const SIZE_VALUES = ['minimal', 'medium', 'large'] as const;
+const SIZE_LABELS = ['Minimal', 'Medium', 'Large'];
+
+export default function SettingsPopup({ initialEmail, initialDisplayEmail, initialPassword, initialTheme, initialAutoScroll, initialPlayerSize, onSave, onAutoScrollChange, onPlayerSizeChange, onClose }: Props) {
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState(initialPassword);
   const [theme, setTheme] = useState(initialTheme || 'system');
   const [autoScroll, setAutoScroll] = useState(initialAutoScroll);
+  const [playerSize, setPlayerSize] = useState(initialPlayerSize || 'large');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [configPath, setConfigPath] = useState('');
   const [copied, setCopied] = useState(false);
+
+  const sizeIndex = Math.max(0, SIZE_VALUES.indexOf(playerSize as typeof SIZE_VALUES[number]));
 
   useEffect(() => { GetConfigPath().then(setConfigPath); }, []);
 
@@ -59,6 +67,13 @@ export default function SettingsPopup({ initialEmail, initialDisplayEmail, initi
     setAutoScroll(val);
     UpdateAutoScroll(val).catch(() => {});
     onAutoScrollChange?.(val);
+  };
+
+  const handlePlayerSizeChange = (idx: number) => {
+    const size = SIZE_VALUES[idx];
+    setPlayerSize(size);
+    UpdatePlayerSize(size).catch(() => {});
+    onPlayerSizeChange?.(size);
   };
 
   const handleCancel = () => {
@@ -101,6 +116,30 @@ export default function SettingsPopup({ initialEmail, initialDisplayEmail, initi
                 {t.label}
               </button>
             ))}
+          </div>
+          <div className="size-slider-wrap">
+            <span className="settings-row-label">Player size</span>
+            <input
+              type="range"
+              className="size-slider"
+              min={0}
+              max={2}
+              step={1}
+              value={sizeIndex}
+              style={{ '--slider-pct': `${(sizeIndex / 2) * 100}%` } as React.CSSProperties}
+              onChange={e => handlePlayerSizeChange(Number(e.target.value))}
+            />
+            <div className="size-slider-ticks">
+              {SIZE_LABELS.map((label, i) => (
+                <span
+                  key={i}
+                  className={`size-tick${i === sizeIndex ? ' size-tick--active' : ''}`}
+                  onClick={() => handlePlayerSizeChange(i)}
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
