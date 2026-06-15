@@ -33,11 +33,17 @@ type AppState struct {
     ChallengeNumber int    `json:"challengeNumber"`
 }
 type Config struct {
-    AutoScrollToUnvoted bool   `json:"autoScrollToUnvoted"`
+    AutoScrollToUnvoted *bool  `json:"autoScrollToUnvoted,omitempty"`  // default true
+    FollowPlayback      *bool  `json:"followPlayback,omitempty"`       // default true
     Email               string `json:"email,omitempty"`
     Password            string `json:"password,omitempty"`
+    Theme               string `json:"theme,omitempty"`       // "day"|"night"|"system"
+    DisplayEmail        string `json:"displayEmail,omitempty"`
+    PlayerSize          string `json:"playerSize,omitempty"` // "minimal"|"medium"|"large"
 }
 ```
+
+`*bool` fields use `omitempty` so absent JSON keys are detectable. `GetConfig()` applies `true` defaults for nil pointers, covering both fresh installs and old configs missing those fields.
 
 ## Frontend files
 
@@ -49,7 +55,8 @@ type Config struct {
 | `frontend/src/components/LoginPage.tsx` | Login form; accepts initialEmail/initialError props |
 | `frontend/src/components/VotingPage.tsx` | Main voting UI; header + song list |
 | `frontend/src/components/SongItem.tsx` | Individual song row: SC iframe, vote buttons, comment button |
-| `frontend/src/components/SettingsPopup.tsx` | Modal popup for changing credentials |
+| `frontend/src/components/SettingsPopup.tsx` | Modal: theme, player size, behavior toggles, credentials |
+| `frontend/src/components/AboutPopup.tsx` | Modal: app version, description, author, links |
 | `frontend/wailsjs/go/main/App.js` | Auto-generated Wails JS bindings (DO NOT edit manually) |
 | `frontend/wailsjs/go/models.ts` | Auto-generated TypeScript models (DO NOT edit manually) |
 | `frontend/index.html` | Loads SC Widget API script from w.soundcloud.com |
@@ -60,6 +67,7 @@ type Config struct {
 App (page router)
 ├── LoginPage        — email/password form
 └── VotingPage       — header + song list
+    ├── AboutPopup   (conditional modal)
     ├── SettingsPopup (conditional modal)
     └── SongItem ×N
         └── SC iframe (Widget API)
@@ -70,14 +78,21 @@ App (page router)
 1. App startup: `IsLoggedIn()` → if false, try `GetConfig()` + `Login()` auto-login
 2. VotingPage mount: `Promise.all([GetSongs(), GetConfig()])` — parallel
 3. Vote click: optimistic update in React state → `SubmitVote(id, points)` → revert on error
-4. SC playback: iframe Widget API PLAY/FINISH/PLAY_PROGRESS events; parent VotingPage manages `playingId`
+4. SC playback: iframe Widget API PLAY/PAUSE/FINISH/PLAY_PROGRESS events; parent VotingPage manages `playingId` + `isPaused`
 5. Comment: `positionRef.current` (updated by PLAY_PROGRESS) → `OpenCommentInBrowser(url, ms)`
 
 ## Wails binding namespace
 
 All Go methods available in TypeScript as:
 ```typescript
-import { Login, Logout, IsLoggedIn, GetSongs, GetConfig, SaveConfig, SubmitVote, OpenCommentInBrowser } from '../../wailsjs/go/main/App';
+import {
+  Login, Logout, IsLoggedIn,
+  GetSongs, GetConfig, SaveConfig,
+  SubmitVote, OpenCommentInBrowser,
+  UpdateTheme, UpdateAutoScroll, UpdateFollowPlayback, UpdatePlayerSize,
+  AppName, AppVersion, OpenURL,
+  GetConfigPath,
+} from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
 // Types: main.Song, main.AppState, main.Config
 // Constructors: main.Song.createFrom({...}), main.Config.createFrom({...})

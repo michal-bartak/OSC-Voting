@@ -37,7 +37,11 @@ Artwork URL: from `getCurrentSound()` on `READY` event. Falls back to `sound.use
 
 ## SC iframe height
 
-Fixed at `height="120"` — the compact SC embed (visual=false) needs exactly this to show the waveform without extra whitespace. Do not use `visual=true` — it would be too tall.
+Controlled by `PlayerSize`: `minimal=20`, `medium=95`, `large=120`. The "small" size was removed (SC player can't adapt). `large` is the default.
+
+## Player size slider
+
+Three sizes: Minimal / Medium / Large. Range input (`max=2`) with custom tick labels. CSS uses `--slider-pct` CSS variable for the filled-track gradient. The `-webkit-slider-runnable-track` pseudo-element must have explicit `height: 4px` to correctly center the 16px thumb (without it, WebKit uses a different default track height and the `margin-top: -6px` centering math is off).
 
 ## Vote buttons
 
@@ -67,10 +71,14 @@ Uses native browser scroll on a flex column. `scrollToFirstUnvoted()` uses `scro
 ## Header layout
 
 ```
-[OSC Voting] [Challenge #N]          [Auto-scroll ☐] [X/Y voted] [⚙] [Log out]
+[OSC Voting] [Challenge #N]          [X/Y voted] [ⓘ] [⚙] [Log out]
 ```
 
-Auto-scroll checkbox is operational (not a setting per se), kept in the header. ⚙ opens the Account modal for credentials.
+`ⓘ` opens the About popup. `⚙` opens the Settings popup. Both use `.settings-btn` CSS class (same style).
+
+## Text/element selection
+
+`body { user-select: none; -webkit-user-select: none }` — prevents accidental text/UI selection via touchpad gestures. The `-webkit-` prefix is required for WebKit (macOS/Wails). Input fields re-enable selection automatically.
 
 ## Modal (SettingsPopup)
 
@@ -92,4 +100,12 @@ Background: `rgba(18, 18, 18, 1)` to avoid white flash on load
 
 ## Auto-scroll feature
 
-Config-backed checkbox in header. On load, if enabled, waits 150ms then scrolls to first unvoted song. Also scrolls on checkbox enable. Does NOT scroll on every vote.
+Config-backed toggle in Settings. On load, if enabled, waits 150ms then scrolls to first unvoted song. Also scrolls when toggled on. Does NOT scroll on every vote. **Default: true.**
+
+## Follow playback
+
+Config-backed toggle in Settings. When enabled, automatically scrolls to the next song when it starts playing — but **only on automatic progression** (`handleFinish`), not when the user manually clicks play. Uses `followPlaybackRef` so `handleFinish` always reads the latest value. **Default: true.**
+
+## About popup
+
+340px modal. Shows: app name + version badge, short description, two link buttons (OSC website + GitHub), author (`Michal "MaXyM" Bartak` / `assisted by Claude AI`), OSC courtesy note. Links open via `OpenURL()` Go binding (`runtime.BrowserOpenURL`). Version loaded via `AppVersion()` binding on mount.

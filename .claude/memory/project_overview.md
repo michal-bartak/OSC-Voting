@@ -9,7 +9,7 @@ metadata:
 
 OSC Voting is a multiplatform desktop app (macOS/Linux/Windows) built with Wails v2 that replaces the drag-and-drop voting UI at onesynthchallenge.org/voting. Users listen to SoundCloud songs and assign 1–5 points to each.
 
-**Why:** The web UI uses drag-and-drop which is awkward; the desktop app provides inline vote buttons, continuous SoundCloud playback with auto-advance, and timed comment deeplinks.
+**Why:** The web UI uses drag-and-drop which is awkward; the desktop app provides inline vote buttons, continuous SoundCloud playback with auto-advance, follow-playback scroll, and timed comment deeplinks.
 
 **Tech stack:**
 - Framework: Wails v2 (Go backend + React+TypeScript frontend, single self-contained binary)
@@ -54,3 +54,7 @@ xattr -d com.apple.quarantine ~/Downloads/OSC-Voting.app
 **Config/session storage:** `~/.config/osc/` (0o600 permissions)
 - `session.json` — persisted session cookie
 - `config.json` — user preferences + credentials
+
+**Linux build tag:** `wails.json` must have `"build:tags": "webkit2_41"` (not `webkit2_4_1`). The correct tag selects `webkit2gtk-4.1` at link time. CI installs `libwebkit2gtk-4.1-dev` on Ubuntu 24.04.
+
+**GitHub remote:** `https://github.com/michal-bartak/OSC-Voting`
