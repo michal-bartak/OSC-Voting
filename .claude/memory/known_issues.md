@@ -7,6 +7,18 @@ metadata:
   originSessionId: 19358bd9-1049-44e2-98d1-de520d816356
 ---
 
+## Comment button stale position after NEXT / first play
+
+**Symptom:** 💬 opens SC page at wrong timestamp immediately after a song starts (first play or after NEXT/PREV/auto-advance). Works correctly after pause → play.
+
+**Root cause:** `positionRef.current` is only reset to `0` in `handleIframeLoad` (iframe reload). When a new song is started programmatically via `SongItemHandle.play()`, positionRef retains the stale value from the last time that song was played. The first `PLAY_PROGRESS` event (~200ms after play starts) would correct it, but there's a window where the comment button reads the wrong value. Pause → play forced a fresh `PLAY_PROGRESS` event, explaining why that workaround helped.
+
+**Fix:** Added `playFromStart()` to `SongItemHandle` interface:
+```typescript
+playFromStart() { positionRef.current = 0; widgetRef.current?.play(); }
+```
+All non-resume call sites in VotingPage (`handleFinish`, `handlePlayFirst`, `handlePrev`, `handleNext`) use `playFromStart()`. `handleResume` keeps plain `play()` to preserve the paused position.
+
 ## Comment button silent failure at non-zero position
 
 **Symptom:** Comment button did nothing when song was at any position > 0. Worked fine at position 0.

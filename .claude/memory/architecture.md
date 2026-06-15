@@ -73,13 +73,26 @@ App (page router)
         └── SC iframe (Widget API)
 ```
 
+## SongItemHandle interface
+
+```typescript
+export interface SongItemHandle {
+  play(): void;          // resume (preserves paused position)
+  playFromStart(): void; // resets positionRef=0, then plays
+  pause(): void;
+  getIframe(): HTMLIFrameElement | null;
+}
+```
+
+`playFromStart()` must be used for all non-resume play calls (NEXT, PREV, auto-advance, first play). `play()` is reserved for `handleResume` only. Using `play()` for a new song start leaves positionRef stale until the first PLAY_PROGRESS fires, causing the comment button to open at the wrong timestamp.
+
 ## Data flow
 
 1. App startup: `IsLoggedIn()` → if false, try `GetConfig()` + `Login()` auto-login
 2. VotingPage mount: `Promise.all([GetSongs(), GetConfig()])` — parallel
 3. Vote click: optimistic update in React state → `SubmitVote(id, points)` → revert on error
 4. SC playback: iframe Widget API PLAY/PAUSE/FINISH/PLAY_PROGRESS events; parent VotingPage manages `playingId` + `isPaused`
-5. Comment: `positionRef.current` (updated by PLAY_PROGRESS) → `OpenCommentInBrowser(url, ms)`
+5. Comment: `positionRef.current` (updated by PLAY_PROGRESS, reset to 0 by `playFromStart()`) → `OpenCommentInBrowser(url, ms)`
 
 ## Wails binding namespace
 

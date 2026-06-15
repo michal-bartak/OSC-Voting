@@ -24,6 +24,7 @@ interface Props {
 
 export interface SongItemHandle {
   play(): void;
+  playFromStart(): void;
   pause(): void;
   getIframe(): HTMLIFrameElement | null;
 }
@@ -45,9 +46,10 @@ const SongItem = forwardRef<SongItemHandle, Props>(
     const [artworkUrl, setArtworkUrl] = useState<string | null>(null);
 
     useImperativeHandle(ref, () => ({
-      play() { widgetRef.current?.play(); },
-      pause() { widgetRef.current?.pause(); },
-      getIframe() { return iframeRef.current; },
+      play()          { widgetRef.current?.play(); },
+      playFromStart() { positionRef.current = 0; widgetRef.current?.play(); },
+      pause()         { widgetRef.current?.pause(); },
+      getIframe()     { return iframeRef.current; },
     }));
 
     const handleIframeLoad = () => {

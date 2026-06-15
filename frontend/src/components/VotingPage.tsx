@@ -127,7 +127,7 @@ export default function VotingPage({ onLogout }: Props) {
 
   const handleFinish = (id: string) => {
     if (loopMode === 'song') {
-      setTimeout(() => songRefs.current[id]?.play(), 100);
+      setTimeout(() => songRefs.current[id]?.playFromStart(), 100);
       return;
     }
     const idx = sortedSongs.findIndex(s => s.id === id);
@@ -135,13 +135,13 @@ export default function VotingPage({ onLogout }: Props) {
     if (next && next.id !== id) {
       setPlayingId(next.id);
       setIsPaused(false);
-      setTimeout(() => songRefs.current[next.id]?.play(), 100);
+      setTimeout(() => songRefs.current[next.id]?.playFromStart(), 100);
       if (followPlaybackRef.current) {
         document.getElementById(`song-item-${next.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     } else if (loopMode === 'playlist' && next?.id === id) {
       // single-song playlist: replay it
-      setTimeout(() => songRefs.current[id]?.play(), 100);
+      setTimeout(() => songRefs.current[id]?.playFromStart(), 100);
     } else {
       setPlayingId(null);
       setIsPaused(false);
@@ -176,7 +176,7 @@ export default function VotingPage({ onLogout }: Props) {
     if (!first) return;
     setPlayingId(first.id);
     setIsPaused(false);
-    setTimeout(() => songRefs.current[first.id]?.play(), 100);
+    setTimeout(() => songRefs.current[first.id]?.playFromStart(), 100);
   };
 
   const handlePrev = () => {
@@ -187,7 +187,7 @@ export default function VotingPage({ onLogout }: Props) {
     songRefs.current[playingId]?.pause();
     setPlayingId(prev.id);
     setIsPaused(false);
-    setTimeout(() => songRefs.current[prev.id]?.play(), 100);
+    setTimeout(() => songRefs.current[prev.id]?.playFromStart(), 100);
   };
 
   const handleNext = () => {
@@ -198,7 +198,7 @@ export default function VotingPage({ onLogout }: Props) {
     songRefs.current[playingId]?.pause();
     setPlayingId(next.id);
     setIsPaused(false);
-    setTimeout(() => songRefs.current[next.id]?.play(), 100);
+    setTimeout(() => songRefs.current[next.id]?.playFromStart(), 100);
   };
 
   const handleVote = (id: string, points: number) => {
