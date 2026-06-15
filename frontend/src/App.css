@@ -308,6 +308,87 @@ body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-se
   margin: 0;
 }
 
+/* ── Description popup ──────────────────────────────────── */
+.desc-btn {
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  border: none;
+}
+
+/* Overlay variant: top-right corner of artwork, visible on any artwork */
+.desc-btn--overlay {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 11px;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.9), 0 1px 3px rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+.desc-btn--overlay:hover {
+  text-shadow: 0 0 6px rgba(0, 0, 0, 1), 0 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+/* In minimal mode the overlay is centered and hidden until the artwork is hovered */
+.song-item--minimal .desc-btn--overlay {
+  top: 50%;
+  left: 50%;
+  right: auto;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+}
+.song-item--minimal .sc-artwork-wrap:hover .desc-btn--overlay {
+  opacity: 1;
+}
+
+.desc-popup {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 420px;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.desc-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.desc-popup-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 8px;
+}
+.desc-popup-body {
+  padding: 12px 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 /* ── Settings popup sections ────────────────────────────── */
 .settings-section { margin-bottom: 24px; }
 .settings-section-label {
@@ -639,17 +720,18 @@ body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-se
   /* border-radius: 4px; */
   overflow: hidden;
 }
+.sc-artwork-wrap {
+  position: relative;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
 .sc-artwork {
   width: 120px;
   height: 120px;
   object-fit: cover;
   flex-shrink: 0;
   display: block;
-  position: relative;
-  z-index: 1;
   border-radius: 4px;
-  margin-right: 4px;
-  /* margin-right: -4px; */
 }
 .sc-artwork--placeholder {
   background-color: var(--bg-input);
@@ -677,9 +759,9 @@ body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-se
   overflow: visible;
 }
 .song-item--minimal .sc-artwork {
-  margin-right: 0;
   border-radius: 3px;
-  flex-shrink: 0;
+}
+.song-item--minimal .sc-artwork-wrap {
   margin-right: 4px;
 }
 .song-actions--minimal {

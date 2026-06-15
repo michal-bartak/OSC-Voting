@@ -44,6 +44,8 @@ const SongItem = forwardRef<SongItemHandle, Props>(
     const [voting, setVoting] = useState(false);
     const prevVoteRef = useRef(song.currentVote);
     const [artworkUrl, setArtworkUrl] = useState<string | null>(null);
+    const [description, setDescription] = useState<string | null>(null);
+    const [descOpen, setDescOpen] = useState(false);
 
     useImperativeHandle(ref, () => ({
       play()          { widgetRef.current?.play(); },
@@ -71,6 +73,7 @@ const SongItem = forwardRef<SongItemHandle, Props>(
         widget.getCurrentSound(sound => {
           const raw = sound?.artwork_url ?? sound?.user?.avatar_url ?? null;
           setArtworkUrl(raw ? raw.replace('-large', '-t200x200') : null);
+          setDescription(sound?.description?.trim() || null);
         });
       });
     };
@@ -80,6 +83,13 @@ const SongItem = forwardRef<SongItemHandle, Props>(
         widgetRef.current?.pause();
       }
     }, [isPlaying]);
+
+    useEffect(() => {
+      if (!descOpen) return;
+      const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setDescOpen(false); };
+      window.addEventListener('keydown', onKey);
+      return () => window.removeEventListener('keydown', onKey);
+    }, [descOpen]);
 
     // WebKit compositing fix: when filter is added/removed, the iframe's
     // compositing layer may retain stale edge pixels. A translateZ(0) toggle
@@ -124,9 +134,20 @@ const SongItem = forwardRef<SongItemHandle, Props>(
     const isMinimal = playerSize === 'minimal';
     const h = PLAYER_HEIGHT[playerSize];
 
-    const artworkEl = artworkUrl
+    const artworkImg = artworkUrl
       ? <img src={artworkUrl} className="sc-artwork" style={{ width: h, height: h }} alt="" />
       : <div className="sc-artwork sc-artwork--placeholder" style={{ width: h, height: h }} />;
+
+    const artworkWrap = (
+      <div className="sc-artwork-wrap" style={{ width: h, height: h }}>
+        {artworkImg}
+        {description && (
+          <button className="desc-btn desc-btn--overlay" onClick={() => setDescOpen(true)} title="Show description">
+            ⓘ
+          </button>
+        )}
+      </div>
+    );
 
     const voteButtons = (
       <div className="vote-buttons">
@@ -170,7 +191,7 @@ const SongItem = forwardRef<SongItemHandle, Props>(
         )}
         {voteError && <div className="vote-error">{voteError}</div>}
         <div className={`sc-player-wrap${isDark ? ' sc-player-wrap--dark' : ''}`}>
-          {artworkEl}
+          {artworkWrap}
           <iframe
             ref={iframeRef}
             id={`sc-player-${song.id}`}
@@ -190,6 +211,17 @@ const SongItem = forwardRef<SongItemHandle, Props>(
             </div>
           )}
         </div>
+        {descOpen && description && (
+          <div className="modal-overlay" onClick={() => setDescOpen(false)}>
+            <div className="desc-popup" onClick={e => e.stopPropagation()}>
+              <div className="desc-popup-header">
+                <span className="desc-popup-title">{song.title}</span>
+                <button className="modal-close" onClick={() => setDescOpen(false)}>✕</button>
+              </div>
+              <div className="desc-popup-body">{description}</div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

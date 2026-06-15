@@ -60,6 +60,12 @@ The hover target is `.song-actions` (the wrapper div), not individual `.vote-btn
 
 💬 emoji button, 30×30px, same row as vote buttons. Opens SC track page at current timestamp in system browser.
 
+## Track description popup
+
+`ⓘ` button overlaid on the artwork image (top-right corner, `position: absolute` inside `.sc-artwork-wrap`). Only rendered when the SC Widget `READY` event returns a non-empty `description` from `getCurrentSound()`. Clicking opens a modal popup (reuses `.modal-overlay`) with the song title and scrollable description text (`white-space: pre-wrap`, vertical scroll only).
+
+Button style: transparent background, no border, white `ⓘ` glyph with `text-shadow` for visibility on any artwork. In medium/large mode the button is always visible. In minimal mode it is hidden (`opacity: 0`) and revealed on `hover` over `.sc-artwork-wrap` via CSS, centered on the image (`top: 50%; left: 50%; transform: translate(-50%, -50%)`). No separate button element is added to the minimal layout — the artwork overlay is the only entry point.
+
 ## Song list scroll
 
 Uses native browser scroll on a flex column. `scrollToFirstUnvoted()` uses `scrollIntoView({ behavior: 'smooth', block: 'center' })` targeting `#song-item-{id}`.

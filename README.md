@@ -11,6 +11,7 @@ A companiond desktop app for voting in the [One Synth Challenge](https://onesynt
 
 - **Voting** — Pick vote for any song at any time without effort
 - **Comments** — 💬 opens the SoundCloud track page in your browser at the current playback position
+- **Track description** — ⓘ shows the artist's track description (when available) in a popup
 - **Playlist playback** — Auto advance to the next song, looping the playlist or the current song
 - **Transport bar** — play/pause, stop, previous/next, loop mode (song / playlist / off)
 - **Player size** — three sizes available (Minimal / Medium / Large)

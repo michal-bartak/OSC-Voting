@@ -93,6 +93,7 @@ export interface SongItemHandle {
 3. Vote click: optimistic update in React state → `SubmitVote(id, points)` → revert on error
 4. SC playback: iframe Widget API PLAY/PAUSE/FINISH/PLAY_PROGRESS events; parent VotingPage manages `playingId` + `isPaused`
 5. Comment: `positionRef.current` (updated by PLAY_PROGRESS, reset to 0 by `playFromStart()`) → `OpenCommentInBrowser(url, ms)`
+6. Description: `description` state populated in READY handler from `getCurrentSound().description`; `descOpen` state drives a modal popup
 
 ## Wails binding namespace
 
