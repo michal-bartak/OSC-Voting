@@ -79,6 +79,17 @@ const SongItem = forwardRef<SongItemHandle, Props>(
       }
     }, [isPlaying]);
 
+    // WebKit compositing fix: when filter is added/removed, the iframe's
+    // compositing layer may retain stale edge pixels. A translateZ(0) toggle
+    // forces WebKit to flush the layer.
+    useEffect(() => {
+      const wrap = iframeRef.current?.parentElement as HTMLElement | null;
+      if (!wrap) return;
+      wrap.style.transform = 'translateZ(0)';
+      const id = requestAnimationFrame(() => { wrap.style.transform = ''; });
+      return () => cancelAnimationFrame(id);
+    }, [isDark]);
+
     const handleVote = async (points: number) => {
       if (voting) return;
       const prev = prevVoteRef.current;
