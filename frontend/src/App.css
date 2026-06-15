@@ -51,7 +51,7 @@
   --scrollbar:        #c0c4cc;
 }
 
-body { background: var(--bg-base); margin: 0; }
+body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-select: none; }
 
 /* ── Splash / Loading ───────────────────────────────────── */
 .splash {
