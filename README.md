@@ -1,31 +1,28 @@
 # OSC Voting
 
-> :sparkles: The application is written with use of AI
+A companiond desktop app for voting in the [One Synth Challenge](https://onesynthchallenge.org) (OSC) — a synth music competition hosted on the [KVR Audio forum](https://www.kvraudio.com/forum/viewforum.php?f=1).
 
-> :heart: This application uses an API originally developed and maintained by the OSC creators for their own application. All credits and thanks go to the original authors for making this interface available and for their work.
+> Uses the OSC site's API. All credit to the OSC creators for building and running the platform.
 
-A desktop app for voting in the [One Synth Challenge](https://onesynthchallenge.org) (OSC) organized by [KVR Audio forum](https://www.kvraudio.com/forum/viewforum.php?f=1)
+<img src="docs/screenshot.gif" width="40%">
+<img src="docs/screenshot-minimal.png" width="50%">
 
 ## Features
 
-- **Inline playback** — SoundCloud player embedded per song, no browser switching
-- **Transport controls** — play/pause, stop, previous and next buttons in a bottom bar
-- **Keyboard shortcut** — Space bar toggles play/pause
-- **Auto-advance** — next song starts automatically when the current one ends
-- **Sort songs** — order by default, votes (high/low), or title A–Z
-- **Vote buttons** — 1–5 points inline; click the active score again to clear the vote; other tracks dim while hovering to keep focus on the song being rated
-- **Timed comments** — 💬 button opens the SC track in your browser at the exact timestamp you're listening at
-- **Loop mode** — loop the current song, the whole playlist, or play straight through
-- **Dark / Light / System theme** — follows your OS or set it manually in settings; the SoundCloud player inverts to match, while album art always shows in natural colors
-- **Auto-scroll** — scrolls to the first unvoted song on load (toggle in options)
-- **Persistent session** — stays logged in between launches
-- **Auto-login** — saves credentials and logs in automatically on next launch
+- **Voting** — Pick vote for any song at any time without effort
+- **Comments** — 💬 opens the SoundCloud track page in your browser at the current playback position
+- **Playlist playback** — Auto advance to the next song, looping the playlist or the current song
+- **Transport bar** — play/pause, stop, previous/next, loop mode (song / playlist / off)
+- **Player size** — three sizes available (Minimal / Medium / Large)
+- **Keyboard shortcut** — Space toggles play/pause
 
-> Due to SoundCloud limitations, comment has to be added on SC page, thus, comment icon opens it in the browser
+- **Follow playback** — list scrolls to the currently playing song on auto-advance (optional). Button to jump to played song at any time
+- **Jump to unvoted** — jumps to the first unvoted song on application start (optional). Button to jump to the first unvoted song at any time
+- **Sort** — by default order, votes (high/low), or title
+- **Auto-login** — saves credentials and restores the session on next launch
+- **Theme** — Dark / Light / System
 
-> Due to SoundCloud limitations, opened comment page starts the song playbeck. Prace SPACE bar to stop it immediatelly (or mute the browser)
-
-![Screenshot](docs/screenshot.gif)
+> :bulb: Voting comments are posted on the SoundCloud page (SC doesn't expose a comments API), so the 💬 button opens it in a browser. Note: the SC page will start playing the track — press Space or mute the browser tab.
 
 ## Download
 
@@ -44,69 +41,67 @@ Get the latest release from the [Releases page](../../releases).
 SmartScreen may warn on first launch. Click **More info → Run anyway**.
 
 ### macOS
-Internet Browsers and some other apps that participate in Apple's quarantine system adds quarantine flags to downloaded but unsigned files (like **OSC Voting**). It may be worked around several ways:
+The app is unsigned, so macOS quarantines it when downloaded via a browser.
 
-**Option 1 - download with curl (recommended, no quarantine flag is set):**
+**Option 1 — download with curl (recommended):**
 ```bash
 curl -LJO https://github.com/michal-bartak/OSC-Voting/releases/latest/download/OSC-Voting-vX.X.X-macos-universal.dmg
 ```
-Open the downloaded `.dmg` normally — no further steps needed.
+Open the `.dmg` normally — no further steps needed.
 
 **Option 2 — already downloaded via browser:**
-Open the .dmg, drag the app to Applications, then run once in Terminal:
+Open the `.dmg`, drag the app to Applications, then run once in Terminal:
 ```bash
 xattr -d com.apple.quarantine /Applications/OSC-Voting.app
 ```
-After that you can run app normally. You won't need to do this again.
 
 ### Linux
-The packages declare runtime dependencies, so your package manager will install them automatically.
+The packages declare runtime dependencies, so your package manager will pull them in automatically.
 
-**Debian / Ubuntu:**
 ```bash
+# Debian / Ubuntu
 sudo apt install ./OSC-Voting-vX.X.X-linux-amd64.deb
-```
 
-**Fedora / RHEL / openSUSE:**
-```bash
+# Fedora / RHEL / openSUSE
 sudo dnf install ./OSC-Voting-vX.X.X-linux-amd64.rpm
 ```
 
-If the app fails to start despite the package being installed, install the runtime libraries manually:
+If the app fails to start, install the runtime libraries manually:
 ```bash
 sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0          # Debian/Ubuntu 24.04+
 sudo dnf install gtk3 webkit2gtk4.1                       # Fedora 38+
-sudo dnf install gtk3 webkit2gtk3                         # Fedora 37 and older / RHEL 9
+sudo dnf install gtk3 webkit2gtk3                         # Fedora 37 / RHEL 9
 ```
 
 ## Building from source
 
 **Requirements:**
 - [Go 1.21+](https://go.dev/dl/)
-- [Node.js 18+ with npm](https://nodejs.org)
+- [Node.js 18+](https://nodejs.org)
 - [Wails v2](https://wails.io): `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
 
-**Linux build dependencies** (headers needed for `wails dev` / `wails build`):
-
+**Linux build dependencies:**
 ```bash
-# Fedora 38+ / modern distros (WebKit 4.1 only)
-sudo dnf install gtk3-devel webkit2gtk4.1-devel gcc-c++ pkgconf-pkg-config
-
 # Debian/Ubuntu 24.04+
 sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
+
+# Fedora 38+
+sudo dnf install gtk3-devel webkit2gtk4.1-devel gcc-c++ pkgconf-pkg-config
 ```
 
-On older Linux distros that still ship only WebKit 4.0 (e.g. Ubuntu 22.04, RHEL 9), remove `"build:tags": "webkit2_41"` from `wails.json` and install the 4.0 dev package instead (`libwebkit2gtk-4.0-dev` or `webkit2gtk3-devel`).
+On older distros shipping only WebKit 4.0 (Ubuntu 22.04, RHEL 9), remove `"build:tags": "webkit2_41"` from `wails.json` and install `libwebkit2gtk-4.0-dev` / `webkit2gtk3-devel` instead.
 
 ```bash
 git clone https://github.com/michal-bartak/OSC-Voting.git
 cd OSC-Voting
-wails build -platform windows/amd64    # or: darwin/universal  linux/amd64
+wails build -platform linux/amd64   # or: darwin/universal  windows/amd64
 ```
 
-Output binary lands in `build/bin/`.
-
-For live development with hot reload:
+Output lands in `build/bin/`. For development with hot reload:
 ```bash
 wails dev
 ```
+
+---
+
+*Built by Michal Bartak, assisted by [Claude](https://claude.ai).*
