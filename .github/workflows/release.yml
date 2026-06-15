@@ -148,7 +148,11 @@ jobs:
           $bmp.Save($dialogBmp, [System.Drawing.Imaging.ImageFormat]::Bmp); $bmp.Dispose()
           $src.Dispose()
 
-          $licenseRtf = "$PWD\build\windows\installer\License.rtf"
+          $exitDlgWxs    = "build\windows\installer\ExitDialog.wxs"
+          $installDirWxs = "build\windows\installer\InstallDirDlg.wxs"
+          $licenseRtf    = "$PWD\build\windows\installer\License.rtf"
+
+          # Compile product.wxs (needs all $(var.*) defines)
           & "$wix\candle.exe" -nologo -arch x64 `
             -dVersion="$wixVersion" `
             -dExePath="$exePath" `
@@ -158,7 +162,15 @@ jobs:
             -dLicenseRtf="$licenseRtf" `
             -o product.wixobj $wxs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & "$wix\light.exe" -nologo -spdb -ext WixUIExtension -ext WixUtilExtension -o $msi product.wixobj
+
+          # Compile custom dialog overrides (no $(var.*) needed)
+          & "$wix\candle.exe" -nologo -arch x64 -o ExitDialog.wixobj $exitDlgWxs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & "$wix\candle.exe" -nologo -arch x64 -o InstallDirDlg.wixobj $installDirWxs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          & "$wix\light.exe" -nologo -spdb -ext WixUIExtension -ext WixUtilExtension `
+            -o $msi product.wixobj ExitDialog.wixobj InstallDirDlg.wixobj
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Fix icon and re-sign (macOS)

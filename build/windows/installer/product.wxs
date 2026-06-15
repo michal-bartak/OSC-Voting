@@ -69,13 +69,4 @@
 
   </Product>
 
-  <!-- Fragment keeps the Publish in its own linker section so Dialog:ExitDialog
-       resolves correctly from the WixUIExtension library. -->
-  <Fragment>
-    <UI>
-      <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchApp" Order="1">
-        WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed
-      </Publish>
-    </UI>
-  </Fragment>
 </Wix>
