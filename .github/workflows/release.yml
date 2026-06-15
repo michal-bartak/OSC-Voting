@@ -114,7 +114,9 @@ jobs:
           # MSI installer via WiX
           $m = [regex]::Match($version, '^(\d+)(?:\.(\d+))?(?:\.(\d+))?')
           $wixVersion = "$($m.Groups[1].Value).$($m.Groups[2].Value -replace '^$','0').$($m.Groups[3].Value -replace '^$','0').0"
-          $wix = "C:\Program Files (x86)\WiX Toolset v3.11\bin"
+          $wix = Get-ChildItem "C:\Program Files (x86)\WiX Toolset*\bin","C:\Program Files\WiX Toolset*\bin" -ErrorAction SilentlyContinue |
+                   Select-Object -First 1 -ExpandProperty FullName
+          if (-not $wix) { throw "WiX Toolset bin directory not found" }
           $wxs  = "build\windows\installer\product.wxs"
           $exePath  = "$PWD\build\bin\$output.exe"
           $iconPath = "$PWD\build\windows\icon.ico"
