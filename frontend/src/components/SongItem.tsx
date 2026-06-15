@@ -138,19 +138,34 @@ const SongItem = forwardRef<SongItemHandle, Props>(
       ? <img src={artworkUrl} className="sc-artwork" style={{ width: h, height: h }} alt="" />
       : <div className="sc-artwork sc-artwork--placeholder" style={{ width: h, height: h }} />;
 
+    const infoIcon = (
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="8" cy="8" r="6.5"/>
+        <line x1="8" y1="7" x2="8" y2="11.5"/>
+        <circle cx="8" cy="4.5" r="0.75" fill="currentColor" stroke="none"/>
+      </svg>
+    );
+
     const artworkWrap = (
       <div className="sc-artwork-wrap" style={{ width: h, height: h }}>
         {artworkImg}
-        {description && (
+        {!isMinimal && description && (
           <button className="desc-btn desc-btn--overlay" onClick={() => setDescOpen(true)} title="Behind the track">
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="8" cy="8" r="6.5"/>
-              <line x1="8" y1="7" x2="8" y2="11.5"/>
-              <circle cx="8" cy="4.5" r="0.75" fill="currentColor" stroke="none"/>
-            </svg>
+            {infoIcon}
           </button>
         )}
       </div>
+    );
+
+    const inlineDescBtn = isMinimal && (
+      <button
+        className="desc-btn desc-btn--inline"
+        onClick={description ? () => setDescOpen(true) : undefined}
+        disabled={!description}
+        title={description ? 'Behind the track' : 'No track info'}
+      >
+        {infoIcon}
+      </button>
     );
 
     const voteButtons = (
@@ -196,6 +211,7 @@ const SongItem = forwardRef<SongItemHandle, Props>(
         {voteError && <div className="vote-error">{voteError}</div>}
         <div className={`sc-player-wrap${isDark ? ' sc-player-wrap--dark' : ''}`}>
           {artworkWrap}
+          {inlineDescBtn}
           <iframe
             ref={iframeRef}
             id={`sc-player-${song.id}`}

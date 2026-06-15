@@ -25,6 +25,7 @@ Michal Bartak is building OSC Voting as a personal tool for a music challenge he
 - "I don't like this approach" → immediately revert, don't argue
 - "make it even bigger" → keep going until they say it's ok
 - Appreciates when something "just works" silently (e.g. auto-login without showing a login page)
+- Prefers `cursor: default` on disabled/inactive elements — not `cursor: not-allowed`
 
 **Technical background:**
 - Comfortable with the full stack (Go, TypeScript, desktop app concepts)
