@@ -16,8 +16,8 @@
     <Property Id="ARPHELPLINK" Value="https://github.com/michal-bartak/OSC-Voting" />
 
     <!-- ── UI ──────────────────────────────────────────────── -->
-    <!-- Point to the PARENT so "OSC Voting" is always appended regardless of user's choice -->
-    <Property Id="WIXUI_INSTALLDIR" Value="ProgramFiles64Folder" />
+    <!-- Point to INSTALLFOLDER so the PathEdit shows the full default path -->
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
     <WixVariable Id="WixUIBannerBmp"   Value="$(var.BannerBmp)" />
     <WixVariable Id="WixUIDialogBmp"   Value="$(var.DialogBmp)" />
     <WixVariable Id="WixUILicenseRtf"  Value="$(var.LicenseRtf)" />
@@ -29,8 +29,14 @@
     <UIRef Id="WixUI_InstallDir" />
 
     <!-- ── Launch after install ───────────────────────────── -->
+    <!-- Schedule AFTER ExitDialog so the app launches only once the user clicks Finish -->
     <Property Id="WixShellExecTarget" Value="[#OSCVotingExe]" />
     <CustomAction Id="LaunchApp" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />
+    <InstallUISequence>
+      <Custom Action="LaunchApp" After="ExitDialog">
+        WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed
+      </Custom>
+    </InstallUISequence>
 
     <!-- ── Layout ─────────────────────────────────────────── -->
     <Directory Id="TARGETDIR" Name="SourceDir">
