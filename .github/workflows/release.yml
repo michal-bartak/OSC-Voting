@@ -151,12 +151,14 @@ jobs:
           $bmp.Save($dialogBmp, [System.Drawing.Imaging.ImageFormat]::Bmp); $bmp.Dispose()
           $src.Dispose()
 
+          $licenseRtf = "$PWD\build\windows\installer\License.rtf"
           & "$wix\candle.exe" -nologo -arch x64 `
             -dVersion="$wixVersion" `
             -dExePath="$exePath" `
             -dIconPath="$iconPath" `
             -dBannerBmp="$bannerBmp" `
             -dDialogBmp="$dialogBmp" `
+            -dLicenseRtf="$licenseRtf" `
             -o product.wixobj $wxs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & "$wix\light.exe" -nologo -ext WixUIExtension -ext WixUtilExtension -o $msi product.wixobj

@@ -17,8 +17,9 @@
 
     <!-- ── UI ──────────────────────────────────────────────── -->
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
-    <WixVariable Id="WixUIBannerBmp" Value="$(var.BannerBmp)" />
-    <WixVariable Id="WixUIDialogBmp" Value="$(var.DialogBmp)" />
+    <WixVariable Id="WixUIBannerBmp"   Value="$(var.BannerBmp)" />
+    <WixVariable Id="WixUIDialogBmp"   Value="$(var.DialogBmp)" />
+    <WixVariable Id="WixUILicenseRtf"  Value="$(var.LicenseRtf)" />
 
     <!-- Pre-tick the "Launch OSC Voting" checkbox on the Finish screen -->
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch OSC Voting" />
