@@ -27,7 +27,7 @@ jobs:
           if [[ "$raw" == v* ]]; then tag="$raw"; else tag="v$raw"; fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "Using release tag: $tag"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ steps.normalize.outputs.tag }}
       - name: Verify tag matches VERSION file
@@ -56,7 +56,7 @@ jobs:
             goos: darwin
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ needs.prepare.outputs.tag }}
 
@@ -65,7 +65,7 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "20"
           cache: "npm"
