@@ -117,14 +117,43 @@ jobs:
           $wix = Get-ChildItem "C:\Program Files (x86)\WiX Toolset*\bin","C:\Program Files\WiX Toolset*\bin" -ErrorAction SilentlyContinue |
                    Select-Object -First 1 -ExpandProperty FullName
           if (-not $wix) { throw "WiX Toolset bin directory not found" }
-          $wxs  = "build\windows\installer\product.wxs"
+          $wxs      = "build\windows\installer\product.wxs"
           $exePath  = "$PWD\build\bin\$output.exe"
           $iconPath = "$PWD\build\windows\icon.ico"
-          $msi  = "$output-v$version-windows-amd64.msi"
+          $msi      = "$output-v$version-windows-amd64.msi"
+
+          # Generate UI bitmaps from the app icon
+          Add-Type -AssemblyName System.Drawing
+          $src = [System.Drawing.Image]::FromFile("$PWD\build\appicon.png")
+          $bg  = [System.Drawing.Color]::FromArgb(255, 30, 30, 30)
+
+          # Banner: 493x58 — top strip on every installer page
+          $bmp = New-Object System.Drawing.Bitmap(493, 58)
+          $g   = [System.Drawing.Graphics]::FromImage($bmp)
+          $g.SmoothingMode    = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
+          $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+          $g.Clear($bg)
+          $g.DrawImage($src, 493 - 52, 5, 46, 46)
+          $g.Dispose(); $bannerBmp = "$env:TEMP\wix-banner.bmp"
+          $bmp.Save($bannerBmp, [System.Drawing.Imaging.ImageFormat]::Bmp); $bmp.Dispose()
+
+          # Dialog: 493x312 — left panel on Welcome/Finish screens
+          $bmp = New-Object System.Drawing.Bitmap(493, 312)
+          $g   = [System.Drawing.Graphics]::FromImage($bmp)
+          $g.SmoothingMode    = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
+          $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+          $g.Clear($bg)
+          $g.DrawImage($src, (164 - 140) / 2, (312 - 140) / 2, 140, 140)
+          $g.Dispose(); $dialogBmp = "$env:TEMP\wix-dialog.bmp"
+          $bmp.Save($dialogBmp, [System.Drawing.Imaging.ImageFormat]::Bmp); $bmp.Dispose()
+          $src.Dispose()
+
           & "$wix\candle.exe" -nologo -arch x64 `
             -dVersion="$wixVersion" `
             -dExePath="$exePath" `
             -dIconPath="$iconPath" `
+            -dBannerBmp="$bannerBmp" `
+            -dDialogBmp="$dialogBmp" `
             -o product.wixobj $wxs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & "$wix\light.exe" -nologo -ext WixUIExtension -o $msi product.wixobj
