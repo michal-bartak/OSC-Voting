@@ -2,28 +2,34 @@
 
 A companiond desktop app for voting in the [One Synth Challenge](https://onesynthchallenge.org) (OSC) — a synth music competition hosted on the [KVR Audio forum](https://www.kvraudio.com/forum/viewforum.php?f=1).
 
-> Uses the OSC site's API. All credit to the OSC creators for building and running the platform.
+> Uses the OSC website's API. Full credit to the OSC creators for building and maintaining the platform.
+
+## Features
+
+The original voting app uses drag-and-drop SoundCloud players to assign votes. While it works well, I found it a bit cumbersome when reviewing larger song lists. This application was created as an alternative workflow, with a focus on:
+
+- **simplified voting**
+- **playlist-style playback**
+- **easier commenting**
 
 <img src="docs/screenshot.gif" width="40%"><img src="docs/screenshot-minimal.png" width="50%">
 <img src="docs/settings.png" width="50%"><img src="docs/behind-the-track.png" width="50%">
 
-## Features
+**Additional features:**
 
-- **Voting** — Pick vote for any song at any time without effort
-- **Comments** — 💬 opens the SoundCloud track page in your browser at the current playback position
-- **Track description** — ⓘ shows the artist's track description (when available) in a popup
-- **Playlist playback** — Auto advance to the next song, looping the playlist or the current song
-- **Transport bar** — play/pause, stop, previous/next, loop mode (song / playlist / off)
-- **Player size** — three sizes available (Minimal / Medium / Large)
+- **Comments** — 💬 opens the SoundCloud track page in your browser at the current playback position allowing enter the comment
+- **Behind the track** — ⓘ displays the artist's track description (when available) in a popup
+- **Playlist playback** — automatically advances to the next song, with options to loop the playlist or the current track
+- **Transport controls** — play/pause, stop, previous/next, and loop modes (track / playlist / off)
+- **Player size** — choose between Minimal, Medium, and Large layouts
 - **Keyboard shortcut** — Space toggles play/pause
+- **Follow playback** — automatically scrolls to the currently playing song when advancing through the playlist (optional). You can also jump to the current song at any time.
+- **Jump to unvoted** — optionally jumps to the first unvoted song on startup. You can also trigger this manually at any time.
+- **Sorting** — by default order, vote score (high/low), or title
+- **Auto-login** — saves credentials and restores the session on the next launch
+- **Theme** — Dark, Light, or System
 
-- **Follow playback** — list scrolls to the currently playing song on auto-advance (optional). Button to jump to played song at any time
-- **Jump to unvoted** — jumps to the first unvoted song on application start (optional). Button to jump to the first unvoted song at any time
-- **Sort** — by default order, votes (high/low), or title
-- **Auto-login** — saves credentials and restores the session on next launch
-- **Theme** — Dark / Light / System
-
-> :bulb: Voting comments are posted on the SoundCloud page (SC doesn't expose a comments API), so the 💬 button opens it in a browser. Note: the SC page will start playing the track — press Space or mute the browser tab.
+> 💡 Comments are posted directly on SoundCloud (its API does not provide comment functionality), so the 💬 button opens the track page in your browser. Note that SoundCloud will begin playing the track automatically - press Space or mute the browser tab if needed.
 
 ## Download
 
@@ -95,13 +101,17 @@ On older distros shipping only WebKit 4.0 (Ubuntu 22.04, RHEL 9), remove `"build
 ```bash
 git clone https://github.com/michal-bartak/OSC-Voting.git
 cd OSC-Voting
-wails build -platform linux/amd64   # or: darwin/universal  windows/amd64
+make build        # build for the current platform
+make dev          # hot-reload dev server
 ```
 
-Output lands in `build/bin/`. For development with hot reload:
+Or invoke Wails directly if you prefer:
 ```bash
+wails build -platform linux/amd64   # or: darwin/universal  windows/amd64
 wails dev
 ```
+
+Output lands in `build/bin/`. The Makefile also provides `make build-linux` and `make build-windows` for cross-platform targets, though cross-compilation requires the matching toolchain and is best left to CI.
 
 ---
 
