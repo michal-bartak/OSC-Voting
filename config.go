@@ -17,6 +17,15 @@ func (a *App) GetConfigPath() string {
 
 func boolPtr(b bool) *bool { return &b }
 
+func loadConfig() (*Config, error) {
+	data, err := os.ReadFile(appConfigFilePath())
+	if err != nil {
+		return nil, err
+	}
+	var cfg Config
+	return &cfg, json.Unmarshal(data, &cfg)
+}
+
 func (a *App) GetConfig() (*Config, error) {
 	data, err := os.ReadFile(appConfigFilePath())
 	if os.IsNotExist(err) {
@@ -47,4 +56,14 @@ func (a *App) SaveConfig(cfg Config) error {
 		return err
 	}
 	return os.WriteFile(appConfigFilePath(), data, 0o600)
+}
+
+func (a *App) SaveWindowSize(width, height int) error {
+	cfg, err := a.GetConfig()
+	if err != nil {
+		return err
+	}
+	cfg.WindowWidth = width
+	cfg.WindowHeight = height
+	return a.SaveConfig(*cfg)
 }

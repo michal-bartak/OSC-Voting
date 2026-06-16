@@ -16,10 +16,20 @@ var assets embed.FS
 func main() {
 	app := NewApp()
 
+	width, height := 1200, 820
+	if cfg, err := loadConfig(); err == nil {
+		if cfg.WindowWidth >= 900 {
+			width = cfg.WindowWidth
+		}
+		if cfg.WindowHeight >= 600 {
+			height = cfg.WindowHeight
+		}
+	}
+
 	err := wails.Run(&options.App{
-		Title:  appName + " v" + appVersion,
-		Width:  1200,
-		Height: 820,
+		Title:     appName + " v" + appVersion,
+		Width:     width,
+		Height:    height,
 		MinWidth:  900,
 		MinHeight: 600,
 		AssetServer: &assetserver.Options{

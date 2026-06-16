@@ -20,4 +20,6 @@ type Config struct {
 	Theme               string `json:"theme,omitempty"`        // "day" | "night" | "system" (default)
 	DisplayEmail        string `json:"displayEmail,omitempty"` // if set, shown instead of real email in UI
 	PlayerSize          string `json:"playerSize,omitempty"`   // "minimal" | "medium" | "large" (default)
+	WindowWidth         int    `json:"windowWidth,omitempty"`
+	WindowHeight        int    `json:"windowHeight,omitempty"`
 }

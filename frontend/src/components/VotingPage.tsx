@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AppName, AppVersion, GetConfig, GetSongs, Logout } from '../../wailsjs/go/main/App';
+import { AppName, AppVersion, GetConfig, GetSongs, Logout, SaveWindowSize } from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
 import AboutPopup from './AboutPopup';
 import BottomBar from './BottomBar';
@@ -221,6 +221,18 @@ export default function VotingPage({ onLogout }: Props) {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [playingId, isPaused, sortedSongs, settingsOpen]);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const onResize = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        SaveWindowSize(window.innerWidth, window.innerHeight);
+      }, 500);
+    };
+    window.addEventListener('resize', onResize);
+    return () => { clearTimeout(timer); window.removeEventListener('resize', onResize); };
+  }, []);
 
   const handleJumpToFirstUnvoted = () => {
     const first = sortedSongs.find(s => s.currentVote === 0);
