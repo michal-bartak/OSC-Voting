@@ -46,6 +46,8 @@ const SongItem = forwardRef<SongItemHandle, Props>(
     const prevVoteRef = useRef(song.currentVote);
     const [artworkUrl, setArtworkUrl] = useState<string | null>(null);
     const [description, setDescription] = useState<string | null>(null);
+    const [scTitle, setScTitle] = useState<string | null>(null);
+    const [scAuthor, setScAuthor] = useState<string | null>(null);
     const [descOpen, setDescOpen] = useState(false);
     const [nearViewport, setNearViewport] = useState(false);
 
@@ -96,6 +98,8 @@ const SongItem = forwardRef<SongItemHandle, Props>(
           const raw = sound?.artwork_url ?? sound?.user?.avatar_url ?? null;
           setArtworkUrl(raw ? raw.replace('-large', '-t200x200') : null);
           setDescription(sound?.description?.trim() || null);
+          setScTitle(sound?.title?.trim() || null);
+          setScAuthor(sound?.user?.username?.trim() || null);
         });
       });
     };
@@ -260,12 +264,13 @@ const SongItem = forwardRef<SongItemHandle, Props>(
         </div>
         {descOpen && description && (
           <div className="modal-overlay" onClick={() => setDescOpen(false)}>
-            <div className="desc-popup" onClick={e => e.stopPropagation()}>
-              <div className="desc-popup-header">
-                <span className="desc-popup-title">{song.title}</span>
+            <div className="modal-card desc-popup" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <span className="desc-popup-title">{scTitle ?? song.title}</span>
                 <button className="modal-close" onClick={() => setDescOpen(false)}>✕</button>
               </div>
-              <div className="desc-popup-body">{description}</div>
+              {scAuthor && <div className="desc-popup-author">{scAuthor} · Behind the track</div>}
+              <div className="desc-popup-body"><p className="desc-popup-text">{description}</p></div>
             </div>
           </div>
         )}

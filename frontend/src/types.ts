@@ -12,7 +12,8 @@ export interface SCWidget {
   unbind(event: string): void;
   getCurrentSound(callback: (sound: {
     artwork_url?: string | null;
-    user?: { avatar_url?: string };
+    title?: string | null;
+    user?: { avatar_url?: string; username?: string };
     description?: string | null;
   } | null) => void): void;
 }

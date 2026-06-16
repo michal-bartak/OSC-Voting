@@ -152,6 +152,8 @@ export default function SettingsPopup({ initialEmail, initialDisplayEmail, initi
           </div>
         </div>
 
+        <hr className="settings-divider" />
+
         <div className="settings-section">
           <div className="settings-section-label">Behavior</div>
           <label className="settings-toggle">

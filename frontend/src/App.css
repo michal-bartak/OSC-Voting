@@ -8,6 +8,7 @@
   --bg-playing:       #1f1a18;
   --border:           #2a2a2a;
   --border-subtle:    #333333;
+  --border-subtle2:   #101010;
   --border-btn:       #3a3a3a;
   --border-hover:     #555555;
   --text-primary:     #ffffff;
@@ -34,6 +35,7 @@
   --bg-playing:       #fff5f0;
   --border:           #e0e3e8;
   --border-subtle:    #d0d4db;
+  --border-subtle2:   #f0f0f0;
   --border-btn:       #d0d4db;
   --border-hover:     #b0b5bf;
   --text-primary:     #111111;
@@ -364,22 +366,16 @@ body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-se
 }
 
 .desc-popup {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  width: 420px;
+  width: 480px;
   max-height: 60vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  padding-bottom: 0;
 }
-.desc-popup-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px 10px;
-  border-bottom: 1px solid var(--border);
+.desc-popup .modal-header {
   flex-shrink: 0;
+  margin-bottom: 0;
 }
 .desc-popup-title {
   font-size: 14px;
@@ -388,10 +384,16 @@ body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-se
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  min-width: 0;
   margin-right: 8px;
 }
+.desc-popup-author {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-bottom: 12px;
+}
 .desc-popup-body {
-  padding: 12px 16px;
   font-size: 13px;
   line-height: 1.6;
   color: var(--text-secondary);
@@ -399,10 +401,12 @@ body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-se
   word-break: break-word;
   overflow-y: auto;
   overflow-x: hidden;
+  margin-bottom: 20px;
 }
+.desc-popup-spacer { height: 20px; }
+
 
 /* ── Settings popup sections ────────────────────────────── */
-.settings-section { margin-bottom: 24px; }
 .settings-section-label {
   font-size: 11px;
   font-weight: 600;
@@ -436,7 +440,6 @@ body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-se
 }
 .settings-divider {
   border: none;
-  border-top: 1px solid var(--border);
   margin: 0 0 20px;
 }
 .config-path-row {
@@ -494,9 +497,17 @@ body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-se
   gap: 10px;
   background: var(--bg-base);
 }
-.song-list::-webkit-scrollbar { width: 6px; }
-.song-list::-webkit-scrollbar-track { background: transparent; }
-.song-list::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 3px; }
+.song-list::-webkit-scrollbar,
+.desc-popup-body::-webkit-scrollbar       { width: 8px; }
+.song-list::-webkit-scrollbar-track,
+.desc-popup-body::-webkit-scrollbar-track { background: transparent; }
+.song-list::-webkit-scrollbar-thumb,
+.desc-popup-body::-webkit-scrollbar-thumb {
+  background: var(--scrollbar);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
 
 /* ── Song Item ──────────────────────────────────────────── */
 .song-item {
