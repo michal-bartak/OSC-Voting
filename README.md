@@ -4,8 +4,8 @@ A companiond desktop app for voting in the [One Synth Challenge](https://onesynt
 
 > Uses the OSC site's API. All credit to the OSC creators for building and running the platform.
 
-<img src="docs/screenshot.gif" width="40%">
-<img src="docs/screenshot-minimal.png" width="50%">
+<img src="docs/screenshot.gif" width="40%"><img src="docs/screenshot-minimal.png" width="50%">
+<img src="docs/settings.png" width="50%"><img src="docs/behind-the-track.png" width="50%">
 
 ## Features
 
