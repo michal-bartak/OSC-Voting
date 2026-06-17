@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppName, AppVersion, GetConfig, GetSongs, Logout, SaveWindowSize } from '../../wailsjs/go/main/App';
+import { WindowGetSize } from '../../wailsjs/runtime/runtime';
 import { main } from '../../wailsjs/go/models';
 import AboutPopup from './AboutPopup';
 import BottomBar from './BottomBar';
@@ -227,7 +228,7 @@ export default function VotingPage({ onLogout }: Props) {
     const onResize = () => {
       clearTimeout(timer);
       timer = setTimeout(() => {
-        SaveWindowSize(window.innerWidth, window.innerHeight);
+        WindowGetSize().then(({ w, h }) => SaveWindowSize(w, h));
       }, 500);
     };
     window.addEventListener('resize', onResize);
