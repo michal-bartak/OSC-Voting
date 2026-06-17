@@ -1,3 +1,7 @@
 :root {
   --sl-color-accent: #ff5500 !important;
 }
+
+a[href="#_top"] {
+  display: none;
+}
