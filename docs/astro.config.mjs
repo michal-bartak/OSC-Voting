@@ -16,6 +16,12 @@ export default defineConfig({
         alt: 'OSC Voting',
         replacesTitle: false,
       },
+      social: [
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/michal-bartak/OSC-Voting' },
+      ],
+      components: {
+        Footer: './src/components/Footer.astro',
+      },
       customCss: ['./src/styles/custom.css'],
       sidebar: [
         { label: 'Home', link: '/' },

@@ -1,0 +1,29 @@
+---
+import Default from 'virtual:starlight/components/Footer';
+---
+
+<Default {...Astro.props}><slot /></Default>
+
+<div class="site-credits">
+  Built by <a href="https://github.com/michal-bartak">Michal Bartak</a>,
+  assisted by <a href="https://claude.ai">Claude</a> (Anthropic) ·
+  <a href="https://github.com/michal-bartak/OSC-Voting">GitHub</a>
+</div>
+
+<style>
+.site-credits {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--sl-color-gray-3);
+  padding: 1rem 1rem 2rem;
+  border-top: 1px solid var(--sl-color-gray-6);
+  margin-top: 1rem;
+}
+.site-credits a {
+  color: var(--sl-color-text-accent);
+  text-decoration: none;
+}
+.site-credits a:hover {
+  text-decoration: underline;
+}
+</style>
