@@ -11,6 +11,16 @@
     <MajorUpgrade DowngradeErrorMessage="A newer version of OSC Voting is already installed." />
     <MediaTemplate EmbedCab="yes" />
 
+    <!-- Pre-populate install dir from previous installation so upgrades land in the same place -->
+    <Property Id="INSTALLFOLDER">
+      <RegistrySearch Id="PreviousInstallPath"
+                      Root="HKLM"
+                      Key="Software\MichalBartak\OSCVoting"
+                      Name="InstallPath"
+                      Type="raw"
+                      Win64="yes" />
+    </Property>
+
     <Icon Id="AppIcon" SourceFile="$(var.IconPath)" />
     <Property Id="ARPPRODUCTICON" Value="AppIcon" />
     <Property Id="ARPHELPLINK" Value="https://github.com/michal-bartak/OSC-Voting" />
@@ -37,6 +47,14 @@
     <ComponentGroup Id="MainFiles" Directory="INSTALLFOLDER">
       <Component Id="MainExe" Guid="*">
         <File Id="OSCVotingExe" Source="$(var.ExePath)" KeyPath="yes" />
+      </Component>
+      <Component Id="InstallPathRegistry" Guid="*">
+        <RegistryValue Root="HKLM"
+                       Key="Software\MichalBartak\OSCVoting"
+                       Name="InstallPath"
+                       Type="string"
+                       Value="[INSTALLFOLDER]"
+                       KeyPath="yes" />
       </Component>
     </ComponentGroup>
 
