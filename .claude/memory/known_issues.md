@@ -135,3 +135,16 @@ Applies to any component containing iframes, videos, or other expensive browser-
 ## Wails dev hot-reload and Go type changes
 
 When Go structs change (e.g. adding fields to Config), `wails dev` auto-regenerates `models.ts` immediately. No manual sync needed. However, if TypeScript code references the new fields before regeneration, there will be a brief TS error. Safe to ignore — it resolves on next hot reload.
+
+## Linux multi-monitor rendering issues on Wayland (confirmed fixed)
+
+**Symptom:** Window opens on the wrong display or renders incorrectly on multi-monitor Wayland setups (observed on Ubuntu 24.04).
+
+**Root cause:** GTK3/WebKit2GTK native Wayland backend has multi-monitor positioning issues in some configurations.
+
+**Fix:** Force X11 backend (XWayland) via `GDK_BACKEND=x11`. Both approaches confirmed working:
+
+- One-off: `GDK_BACKEND=x11 OSC-Voting`
+- Permanent: edit `/usr/share/applications/osc-voting.desktop`, change `Exec=OSC-Voting` → `Exec=env GDK_BACKEND=x11 OSC-Voting`
+
+No in-app config toggle — the env var must be set before GTK initialises, so it can only be applied at launch time from outside the app. Documented in README under Troubleshooting.
