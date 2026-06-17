@@ -5,11 +5,8 @@ description: Author and acknowledgements for OSC Voting
 
 ## Author
 
-Built by [Michal Bartak](https://github.com/michal-bartak).
-
-## AI Assistance
-
-Development assisted by [Claude](https://claude.ai) (Anthropic).
+Built by [Michal Bartak](https://github.com/michal-bartak).\
+Assisted by [Claude](https://claude.ai) (Anthropic).
 
 ## Source Code
 
@@ -17,4 +14,4 @@ Development assisted by [Claude](https://claude.ai) (Anthropic).
 
 ## Acknowledgements
 
-Full credit to the OSC creators for building and maintaining the [One Synth Challenge](https://onesynthchallenge.org) platform and its API.
+Full credit to the [KVR's](https://www.kvraudio.com/forum/viewforum.php?f=1) **One Synth Challange** creators for building and maintaining the original platform and its API.

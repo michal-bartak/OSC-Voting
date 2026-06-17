@@ -30,16 +30,10 @@ The original voting app uses drag-and-drop SoundCloud players to assign votes. T
 | **Theme** | Dark, Light, or System |
 | **Persistent window size** | Window dimensions are saved and restored on restart |
 
-![Minimal player](../../assets/screenshot-minimal.png)
-
-![Settings](../../assets/settings.png) ![Behind the track](../../assets/behind-the-track.png)
-
----
-
 :::note
 Comments are posted directly on SoundCloud (its API does not provide comment functionality), so the 💬 button opens the track page in your browser. SoundCloud will begin playing the track automatically — press Space or mute the browser tab if needed.
 :::
 
----
+![Minimal player](../../assets/screenshot-minimal.png)
 
-Built by [Michal Bartak](https://github.com/michal-bartak), assisted by [Claude](https://claude.ai) (Anthropic) · [GitHub](https://github.com/michal-bartak/OSC-Voting)
+![Settings](../../assets/settings.png) ![Behind the track](../../assets/behind-the-track.png)

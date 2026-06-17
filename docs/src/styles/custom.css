@@ -1,5 +1,6 @@
 :root {
   --sl-color-accent: #ff5500 !important;
+  --sl-color-accent-high: var(--sl-color-accent) !important;
 }
 
 a[href="#_top"] {
