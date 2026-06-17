@@ -1,21 +1,15 @@
 ---
 title: Home
-nav_order: 1
+description: OSC Voting — desktop voting app for the OneSynthChallenge
 ---
-
-# OSC Voting
 
 A companion desktop app for voting in the [One Synth Challenge](https://onesynthchallenge.org) (OSC) — a synth music competition hosted on the [KVR Audio forum](https://www.kvraudio.com/forum/viewforum.php?f=1).
 
 > Uses the OSC website's API. Full credit to the OSC creators for building and maintaining the platform.
 
-The original voting app uses drag-and-drop SoundCloud players to assign votes. While it works well, this app offers an alternative workflow focused on:
+The original voting app uses drag-and-drop SoundCloud players to assign votes. This app offers an alternative workflow focused on simplified voting, playlist-style playback, and easier commenting.
 
-- **Simplified voting**
-- **Playlist-style playback**
-- **Easier commenting**
-
-![Screenshot](screenshot.gif){: width="60%" }
+![Screenshot](../../assets/screenshot.gif)
 
 ## Features
 
@@ -34,9 +28,12 @@ The original voting app uses drag-and-drop SoundCloud players to assign votes. W
 | **Theme** | Dark, Light, or System |
 | **Persistent window size** | Window dimensions are saved and restored on restart |
 
-![Minimal player](screenshot-minimal.png){: width="60%" }
-![Settings](settings.png){: width="45%" } ![Behind the track](behind-the-track.png){: width="45%" }
+![Minimal player](../../assets/screenshot-minimal.png)
+
+![Settings](../../assets/settings.png) ![Behind the track](../../assets/behind-the-track.png)
 
 ---
 
-> 💡 Comments are posted directly on SoundCloud (its API does not provide comment functionality), so the 💬 button opens the track page in your browser. SoundCloud will begin playing the track automatically — press Space or mute the browser tab if needed.
+:::note
+Comments are posted directly on SoundCloud (its API does not provide comment functionality), so the 💬 button opens the track page in your browser. SoundCloud will begin playing the track automatically — press Space or mute the browser tab if needed.
+:::

@@ -1,9 +1,7 @@
 ---
 title: Building from Source
-nav_order: 3
+description: How to build OSC Voting from source using Go, Node.js, and Wails
 ---
-
-# Building from Source
 
 ## Requirements
 
@@ -21,7 +19,9 @@ sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
 sudo dnf install gtk3-devel webkit2gtk4.1-devel gcc-c++ pkgconf-pkg-config
 ```
 
+:::note
 On older distros shipping only WebKit 4.0 (Ubuntu 22.04, RHEL 9), remove `"build:tags": "webkit2_41"` from `wails.json` and install `libwebkit2gtk-4.0-dev` / `webkit2gtk3-devel` instead.
+:::
 
 ## Commands
 

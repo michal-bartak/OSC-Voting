@@ -1,9 +1,7 @@
 ---
 title: Troubleshooting
-nav_order: 4
+description: Solutions for known issues with OSC Voting
 ---
-
-# Troubleshooting
 
 ## Linux — multi-monitor rendering issues on Wayland
 
@@ -26,4 +24,5 @@ to:
 ```
 Exec=env GDK_BACKEND=x11 OSC-Voting
 ```
+
 Save and log out/in. The launcher will now always start the app under XWayland while leaving everything else unaffected.

@@ -1,9 +1,7 @@
 ---
 title: Installation
-nav_order: 2
+description: How to download and install OSC Voting on Windows, macOS, and Linux
 ---
-
-# Installation
 
 ## Download
 

@@ -1,8 +1,0 @@
-title: OSC Voting
-description: Desktop voting app for the OneSynthChallenge
-remote_theme: just-the-docs/just-the-docs
-color_scheme: dark
-url: https://michal-bartak.github.io
-baseurl: /OSC-Voting
-plugins:
-  - jekyll-remote-theme

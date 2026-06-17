@@ -2,7 +2,7 @@
 
 A companion desktop app for voting in the [One Synth Challenge](https://onesynthchallenge.org) — playlist-style playback, simplified voting, and one-click timed comments on SoundCloud.
 
-![Screenshot](docs/screenshot.gif)
+![Screenshot](docs/src/assets/screenshot.gif)
 
 📖 **[Full documentation](https://michal-bartak.github.io/OSC-Voting/)**
 
