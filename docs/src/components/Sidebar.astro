@@ -1,0 +1,21 @@
+---
+import Default from 'virtual:starlight/components/Sidebar';
+---
+
+<Default {...Astro.props}><slot /></Default>
+
+<div class="sidebar-icon">
+  <img src={`${import.meta.env.BASE_URL}appicon.png`} alt="OSC Voting" width="72" height="72" />
+</div>
+
+<style>
+.sidebar-icon {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 1rem 1rem;
+}
+.sidebar-icon img {
+  border-radius: 16px;
+  opacity: 0.9;
+}
+</style>
