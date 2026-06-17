@@ -3,6 +3,8 @@ title: Home
 description: OSC Voting — desktop voting app for the OneSynthChallenge
 ---
 
+## Overview
+
 A companion desktop app for voting in the [One Synth Challenge](https://onesynthchallenge.org) (OSC) — a synth music competition hosted on the [KVR Audio forum](https://www.kvraudio.com/forum/viewforum.php?f=1).
 
 > Uses the OSC website's API. Full credit to the OSC creators for building and maintaining the platform.
