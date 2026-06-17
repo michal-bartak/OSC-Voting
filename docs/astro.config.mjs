@@ -23,6 +23,7 @@ export default defineConfig({
         { label: 'Installation', link: '/installation/' },
         { label: 'Building from Source', link: '/building/' },
         { label: 'Troubleshooting', link: '/troubleshooting/' },
+        { label: 'Credits', link: '/credits/' },
       ],
     }),
   ],
