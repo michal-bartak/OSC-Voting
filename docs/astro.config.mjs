@@ -10,7 +10,7 @@ export default defineConfig({
       title: 'OSC Voting',
       description: 'Desktop voting app for the OneSynthChallenge',
       plugins: [starlightThemeRapide()],
-      favicon: { href: '/appicon.png', type: 'image/png' },
+      favicon: '/appicon.png',
       customCss: ['./src/styles/custom.css'],
       components: {
         Sidebar: './src/components/Sidebar.astro',
