@@ -44,6 +44,15 @@ func (a *App) GetConfig() (*Config, error) {
 	if cfg.FollowPlayback == nil {
 		cfg.FollowPlayback = boolPtr(true)
 	}
+	if cfg.NotificationsEnabled == nil {
+		cfg.NotificationsEnabled = boolPtr(true)
+	}
+	if cfg.NotificationThreshold == 0 {
+		cfg.NotificationThreshold = 80
+	}
+	if cfg.NotificationSkipVoted == nil {
+		cfg.NotificationSkipVoted = boolPtr(false)
+	}
 	return &cfg, nil
 }
 
