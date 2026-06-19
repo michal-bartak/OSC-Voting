@@ -122,11 +122,20 @@ func (a *App) showLinuxVoteDialog(songID string) {
 	// Force GDK_BACKEND=x11 so the window runs under XWayland: Wayland's
 	// compositor otherwise withholds focus from undecorated popup windows,
 	// making the vote buttons non-interactive.
-	// Pass the app's theme so the popup matches light/dark; "system" lets the
-	// script follow the desktop's GTK preference.
+	// Pass the app's theme so the popup matches light/dark. Resolve "system"
+	// here via IsSystemDark() (gsettings) — the same detection the app UI uses
+	// — because the GTK popup's own prefer-dark probe is unreliable and would
+	// otherwise disagree with the app (light popup over a dark app).
 	theme := "system"
 	if cfg, err := a.GetConfig(); err == nil && cfg.Theme != "" {
 		theme = cfg.Theme
+	}
+	if theme == "system" {
+		if a.IsSystemDark() {
+			theme = "night"
+		} else {
+			theme = "day"
+		}
 	}
 
 	if pythonPath, err := exec.LookPath("python3"); err == nil {
