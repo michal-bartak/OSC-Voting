@@ -200,7 +200,7 @@ const SongItem = forwardRef<SongItemHandle, Props>(
         {[1, 2, 3, 4, 5].map(n => (
           <button
             key={n}
-            className={`vote-btn${song.currentVote === n ? ' vote-btn--active' : ''}${isMinimal ? ' vote-btn--sm' : ''}`}
+            className={`vote-btn${song.currentVote === n ? ' vote-btn--active' : ''}`}
             onClick={() => handleVote(n)}
             disabled={voting}
             title={`Give ${n} point${n > 1 ? 's' : ''}`}
@@ -213,7 +213,7 @@ const SongItem = forwardRef<SongItemHandle, Props>(
 
     const commentBtn = (
       <button
-        className={`comment-btn${isMinimal ? ' comment-btn--sm' : ''}`}
+        className="comment-btn"
         onClick={handleComment}
         title="Comment on SoundCloud at current position"
       >

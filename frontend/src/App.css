@@ -803,12 +803,12 @@ body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-se
   flex-shrink: 0;
   padding: 8px 10px 8px 6px;
 }
-.vote-btn--sm {
+.song-item--minimal .vote-btn {
   width: 26px;
   height: 26px;
   font-size: 11px;
 }
-.comment-btn--sm {
+.song-item--minimal .comment-btn {
   width: 26px;
   height: 26px;
   font-size: 12px;
