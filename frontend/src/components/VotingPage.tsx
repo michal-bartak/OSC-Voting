@@ -48,8 +48,6 @@ export default function VotingPage({ onLogout }: Props) {
   const [hoveredSongId, setHoveredSongId] = useState<string | null>(null);
   const hoverEnterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hoverClearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const playerSizeRef = useRef(playerSize);
-  playerSizeRef.current = playerSize;
 
   const sortedSongs = useMemo(() => {
     const copy = [...songs];
@@ -338,16 +336,15 @@ export default function VotingPage({ onLogout }: Props) {
         onMouseOver={e => {
           const actions = (e.target as Element).closest('.song-actions');
           if (!actions) return;
-          if (hoverClearTimer.current) { clearTimeout(hoverClearTimer.current); hoverClearTimer.current = null; }
           if (hoverEnterTimer.current) { clearTimeout(hoverEnterTimer.current); hoverEnterTimer.current = null; }
           const itemEl = actions.closest('[id^="song-item-"]');
           if (!itemEl) return;
           const id = itemEl.id.replace('song-item-', '');
-          if (playerSizeRef.current === 'minimal') {
+          hoverEnterTimer.current = setTimeout(() => {
+            hoverEnterTimer.current = null;
+            if (hoverClearTimer.current) { clearTimeout(hoverClearTimer.current); hoverClearTimer.current = null; }
             setHoveredSongId(id);
-          } else {
-            hoverEnterTimer.current = setTimeout(() => { hoverEnterTimer.current = null; setHoveredSongId(id); }, 150);
-          }
+          }, 50);
         }}
         onMouseOut={e => {
           if (!(e.target as Element).closest('.song-actions')) return;
