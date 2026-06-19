@@ -11,7 +11,7 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 > as you work; when cutting a release, rename it to the new version + date so the
 > heading matches `VERSION` (e.g. `## [1.1.0] - 2026-07-01`).
 
-## [Unreleased]
+## [1.1.0] - 2026-06-19
 
 ### Added
 
