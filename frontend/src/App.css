@@ -521,7 +521,7 @@ body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-se
 .song-item--other-active {
   opacity: 0.35;
   filter: blur(1px);
-  transition: border-left-color 0.2s, opacity 0.15s ease, filter 0.15s ease;
+  transition: border-left-color 0.2s, opacity 0.25s ease, filter 0.25s ease;
 }
 .song-item--playing { border-left-color: var(--accent); background: var(--bg-playing); }
 

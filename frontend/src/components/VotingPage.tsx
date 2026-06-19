@@ -344,7 +344,7 @@ export default function VotingPage({ onLogout }: Props) {
             hoverEnterTimer.current = null;
             if (hoverClearTimer.current) { clearTimeout(hoverClearTimer.current); hoverClearTimer.current = null; }
             setHoveredSongId(id);
-          }, 50);
+          }, 150);
         }}
         onMouseOut={e => {
           if (!(e.target as Element).closest('.song-actions')) return;
