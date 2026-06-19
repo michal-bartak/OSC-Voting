@@ -1,9 +1,18 @@
 WAILS := $(shell which wails 2>/dev/null || echo ~/go/bin/wails)
 
-.PHONY: dev build build-linux build-windows build-all
+# On Linux, XWayland gives WebKit2GTK GPU-accelerated CSS filters.
+# Native Wayland's DMA-buf path falls back to software rendering for blur/opacity.
+ifeq ($(shell uname), Linux)
+	ENV := GDK_BACKEND=x11
+endif
+
+.PHONY: dev run build build-linux build-windows build-all
 
 dev:
-	$(WAILS) dev
+	$(ENV) $(WAILS) dev
+
+run:
+	$(ENV) ./build/bin/OSC-Voting
 
 build:
 	$(WAILS) build -clean

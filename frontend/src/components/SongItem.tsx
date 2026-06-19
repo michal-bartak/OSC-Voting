@@ -16,6 +16,7 @@ interface Props {
   isPlaying: boolean;
   isDark: boolean;
   playerSize?: PlayerSize;
+  isOtherActive?: boolean;
   onPlay: (id: string) => void;
   onPause: (id: string) => void;
   onFinish: (id: string) => void;
@@ -30,7 +31,7 @@ export interface SongItemHandle {
 }
 
 const SongItem = forwardRef<SongItemHandle, Props>(
-  ({ song, isPlaying, isDark, playerSize = 'large', onPlay, onPause, onFinish, onVote }, ref) => {
+  ({ song, isPlaying, isDark, playerSize = 'large', isOtherActive, onPlay, onPause, onFinish, onVote }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const widgetRef = useRef<SCWidget | null>(null);
@@ -199,7 +200,7 @@ const SongItem = forwardRef<SongItemHandle, Props>(
         {[1, 2, 3, 4, 5].map(n => (
           <button
             key={n}
-            className={`vote-btn${song.currentVote === n ? ' vote-btn--active' : ''}${isMinimal ? ' vote-btn--sm' : ''}`}
+            className={`vote-btn${song.currentVote === n ? ' vote-btn--active' : ''}`}
             onClick={() => handleVote(n)}
             disabled={voting}
             title={`Give ${n} point${n > 1 ? 's' : ''}`}
@@ -212,7 +213,7 @@ const SongItem = forwardRef<SongItemHandle, Props>(
 
     const commentBtn = (
       <button
-        className={`comment-btn${isMinimal ? ' comment-btn--sm' : ''}`}
+        className="comment-btn"
         onClick={handleComment}
         title="Comment on SoundCloud at current position"
       >
@@ -224,7 +225,7 @@ const SongItem = forwardRef<SongItemHandle, Props>(
       <div
         id={`song-item-${song.id}`}
         ref={containerRef}
-        className={`song-item${isPlaying ? ' song-item--playing' : ''}${isMinimal ? ' song-item--minimal' : ''}`}
+        className={`song-item${isPlaying ? ' song-item--playing' : ''}${isMinimal ? ' song-item--minimal' : ''}${isOtherActive ? ' song-item--other-active' : ''}`}
       >
         {!isMinimal && (
           <div className="song-header">
@@ -255,13 +256,13 @@ const SongItem = forwardRef<SongItemHandle, Props>(
           ) : (
             <div className="sc-iframe sc-iframe--placeholder" style={{ height: h }} />
           )}
-          {isMinimal && (
-            <div className="song-actions song-actions--minimal">
-              {voteButtons}
-              {commentBtn}
-            </div>
-          )}
         </div>
+        {isMinimal && (
+          <div className="song-actions song-actions--minimal">
+            {voteButtons}
+            {commentBtn}
+          </div>
+        )}
         {descOpen && description && (
           <div className="modal-overlay" onClick={() => setDescOpen(false)}>
             <div className="modal-card desc-popup" onClick={e => e.stopPropagation()}>

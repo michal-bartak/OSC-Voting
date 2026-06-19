@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=OSC Voting
+Exec=env GDK_BACKEND=x11 OSC-Voting
+Icon=osc-voting
+Comment=Vote on tracks in the OneSynthChallenge
+Categories=AudioVideo;Audio;
+Terminal=false

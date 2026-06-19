@@ -10,7 +10,8 @@ OSC Voting is a desktop app (Wails v2 + React + TypeScript) for voting on tracks
 
 ### Development
 ```
-wails dev          # hot-reload dev server (Go + Vite HMR)
+wails dev                      # hot-reload dev server (Go + Vite HMR)
+GDK_BACKEND=x11 wails dev      # Linux: use XWayland for GPU-accelerated CSS filters
 ```
 
 ### Build

@@ -518,10 +518,10 @@ body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-se
   padding: 10px 12px 6px;
   transition: border-left-color 0.2s, opacity 0.25s ease, filter 0.25s ease;
 }
-.song-list:has(.song-actions:hover) .song-item:not(:has(.song-actions:hover)) {
+.song-item--other-active {
   opacity: 0.35;
   filter: blur(1px);
-  transition-delay: 200ms;
+  transition: border-left-color 0.2s, opacity 0.25s ease, filter 0.25s ease;
 }
 .song-item--playing { border-left-color: var(--accent); background: var(--bg-playing); }
 
@@ -776,12 +776,17 @@ body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-se
 
 /* ── Minimal song item ──────────────────────────────────── */
 .song-item--minimal {
-  padding: 8px 10px 8px;
+  padding: 0;
+  display: flex;
+  align-items: stretch;
 }
 .song-item--minimal .song-header {
   margin-bottom: 4px;
 }
 .song-item--minimal .sc-player-wrap {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 0 8px 10px;
   align-items: center;
   overflow: visible;
 }
@@ -796,14 +801,14 @@ body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-se
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
-  padding-left: 6px;
+  padding: 8px 10px 8px 6px;
 }
-.vote-btn--sm {
+.song-item--minimal .vote-btn {
   width: 26px;
   height: 26px;
   font-size: 11px;
 }
-.comment-btn--sm {
+.song-item--minimal .comment-btn {
   width: 26px;
   height: 26px;
   font-size: 12px;

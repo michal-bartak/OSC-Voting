@@ -39,6 +39,16 @@ Artwork URL: from `getCurrentSound()` on `READY` event. Falls back to `sound.use
 
 Controlled by `PlayerSize`: `minimal=20`, `medium=95`, `large=120`. The "small" size was removed (SC player can't adapt). `large` is the default.
 
+## Minimal player layout
+
+In minimal mode, `.song-item--minimal` is a flex row (`display: flex; align-items: stretch; padding: 0`). The two children are:
+- `.sc-player-wrap` (`flex: 1`, `padding: 8px 0 8px 10px`) — artwork, info button, iframe
+- `.song-actions--minimal` (`padding: 8px 10px 8px 6px`) — vote buttons + comment button
+
+This makes `.song-actions--minimal` fill the full item height (including what was previously the item's padding), giving a larger hit/hover area for the vote buttons. The original `8px 10px` padding is preserved, just distributed between the two children instead of sitting on `.song-item--minimal`.
+
+In non-minimal modes, `.song-actions` lives inside `.song-header` (flex row at top of item).
+
 ## Player size slider
 
 Three sizes: Minimal / Medium / Large. Range input (`max=2`) with custom tick labels. CSS uses `--slider-pct` CSS variable for the filled-track gradient. The `-webkit-slider-runnable-track` pseudo-element must have explicit `height: 4px` to correctly center the 16px thumb (without it, WebKit uses a different default track height and the `margin-top: -6px` centering math is off).
@@ -47,14 +57,25 @@ Three sizes: Minimal / Medium / Large. Range input (`max=2`) with custom tick la
 
 1–5 inline buttons per song. Clicking the active score again resets to 0 (unvote). Optimistic update in React state with revert on network error.
 
-When hovering anywhere within `.song-actions` (vote buttons + comment button), all other `.song-item` cards dim via CSS `:has()`:
+When hovering `.song-actions` (vote buttons + comment button), all other `.song-item` cards dim:
 ```css
-.song-list:has(.song-actions:hover) .song-item:not(:has(.song-actions:hover)) {
+.song-item--other-active {
   opacity: 0.35;
   filter: blur(1px);
+  transition-delay: 200ms;
 }
 ```
-The hover target is `.song-actions` (the wrapper div), not individual `.vote-btn` elements — this prevents flicker when the pointer moves between buttons.
+
+Hover tracking is done via **React state** (`hoveredSongId` in `VotingPage`), not CSS `:has()`. The old `:has()` approach caused all items to share a single CSS condition — any hover interruption reset ALL items' transitions simultaneously (collective blink). The React approach gives each item an independent `song-item--other-active` class so transitions never interfere.
+
+Detection uses event delegation on `.song-list`:
+- `onMouseOver`: if target is inside `.song-actions`, set `hoveredSongId` and cancel pending clear
+- `onMouseOut`: if leaving `.song-actions` to a non-`.song-actions` target, start a 150ms debounce to clear
+- `onMouseLeave`: immediately clears (cursor left the song-list entirely)
+
+The 150ms debounce prevents D from blinking when cursor moves from A's vote buttons to B's vote buttons — the brief transit through non-vote-button elements doesn't fire the clear if another `.song-actions` is entered within 150ms.
+
+Each `SongItem` receives `isOtherActive={hoveredSongId !== null && hoveredSongId !== song.id}` and applies the class accordingly. No per-item event handlers needed — all detection is on the container.
 
 ## Comment button
 

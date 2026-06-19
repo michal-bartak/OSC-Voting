@@ -45,6 +45,9 @@ export default function VotingPage({ onLogout }: Props) {
     () => document.documentElement.getAttribute('data-theme') === 'dark'
   );
   const songRefs = useRef<Record<string, SongItemHandle>>({});
+  const [hoveredSongId, setHoveredSongId] = useState<string | null>(null);
+  const hoverEnterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hoverClearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const sortedSongs = useMemo(() => {
     const copy = [...songs];
@@ -328,7 +331,33 @@ export default function VotingPage({ onLogout }: Props) {
           onClose={() => setSettingsOpen(false)}
         />
       )}
-      <div className="song-list">
+      <div
+        className="song-list"
+        onMouseOver={e => {
+          const actions = (e.target as Element).closest('.song-actions');
+          if (!actions) return;
+          if (hoverEnterTimer.current) { clearTimeout(hoverEnterTimer.current); hoverEnterTimer.current = null; }
+          const itemEl = actions.closest('[id^="song-item-"]');
+          if (!itemEl) return;
+          const id = itemEl.id.replace('song-item-', '');
+          hoverEnterTimer.current = setTimeout(() => {
+            hoverEnterTimer.current = null;
+            if (hoverClearTimer.current) { clearTimeout(hoverClearTimer.current); hoverClearTimer.current = null; }
+            setHoveredSongId(id);
+          }, 150);
+        }}
+        onMouseOut={e => {
+          if (!(e.target as Element).closest('.song-actions')) return;
+          if ((e.relatedTarget as Element | null)?.closest('.song-actions')) return;
+          if (hoverEnterTimer.current) { clearTimeout(hoverEnterTimer.current); hoverEnterTimer.current = null; }
+          hoverClearTimer.current = setTimeout(() => { hoverClearTimer.current = null; setHoveredSongId(null); }, 150);
+        }}
+        onMouseLeave={() => {
+          if (hoverEnterTimer.current) { clearTimeout(hoverEnterTimer.current); hoverEnterTimer.current = null; }
+          if (hoverClearTimer.current) { clearTimeout(hoverClearTimer.current); hoverClearTimer.current = null; }
+          setHoveredSongId(null);
+        }}
+      >
         {songs.map(song => (
           <div key={song.id} style={{ order: sortPositions.get(song.id) ?? 0 }}>
             <SongItem
@@ -336,6 +365,7 @@ export default function VotingPage({ onLogout }: Props) {
               isPlaying={playingId === song.id}
               isDark={isDark}
               playerSize={playerSize}
+              isOtherActive={hoveredSongId !== null && hoveredSongId !== song.id}
               onPlay={handlePlay}
               onPause={handleEmbedPause}
               onFinish={handleFinish}
