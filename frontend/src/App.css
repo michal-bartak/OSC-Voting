@@ -516,12 +516,12 @@ body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-se
   border-left: 3px solid transparent;
   border-radius: 8px;
   padding: 10px 12px 6px;
-  transition: border-left-color 0.2s;
+  transition: border-left-color 0.2s, opacity 0.1s ease, filter 0.1s ease;
 }
 .song-item--other-active {
   opacity: 0.35;
   filter: blur(1px);
-  transition: opacity 0.45s ease, filter 0.45s ease;
+  transition: border-left-color 0.2s, opacity 0.15s ease, filter 0.15s ease;
 }
 .song-item--playing { border-left-color: var(--accent); background: var(--bg-playing); }
 
