@@ -18,6 +18,7 @@ The original voting app uses drag-and-drop SoundCloud players to assign votes. T
 | Feature | Description |
 |---------|-------------|
 | **Voting** | Click vote buttons (1–5) per track; votes are saved immediately |
+| **Vote reminders** | Optional OS notification near the end of a track |
 | **Playback** | Playlist-style with auto-advance, loop (track / playlist / off), and transport controls |
 | **Comments** | 💬 opens the SoundCloud track page in your browser at the current playback position |
 | **Behind the track** | ⓘ shows the artist's track description in a popup (when available) |
