@@ -11,6 +11,7 @@ CSS = b"""
 window {
     background-color: #1a1a1a;
     border: 1px solid #3c3c3c;
+    border-radius: 13px;
 }
 label.song-title {
     color: #b0b0b0;
@@ -34,7 +35,7 @@ button {
 button:hover {
     background-image: none;
     background-color: #3d3d3d;
-    border-color: #666;
+    border-color: #666666;
 }
 button:active {
     background-image: none;
@@ -52,20 +53,21 @@ button.vote-active:hover {
 }
 button.close-btn {
     background-image: none;
-    background-color: transparent;
+    background-color: #333333;
     border: none;
-    color: #606060;
-    font-size: 11px;
-    min-width: 20px;
-    min-height: 20px;
-    padding: 0 3px;
+    color: #999999;
+    font-size: 10px;
+    min-width: 19px;
+    min-height: 19px;
+    padding: 0;
     box-shadow: none;
-    border-radius: 3px;
+    /* circle: radius must be >= half the diameter */
+    border-radius: 10px;
 }
 button.close-btn:hover {
     background-image: none;
-    background-color: rgba(255,255,255,0.07);
-    color: #aaaaaa;
+    background-color: #ff3b30;
+    color: #ffffff;
 }
 """
 
@@ -95,14 +97,20 @@ class VotePopup(Gtk.Window):
             screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
 
-        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        outer.set_margin_top(8)
-        outer.set_margin_bottom(10)
-        outer.set_margin_start(10)
-        outer.set_margin_end(10)
-        self.add(outer)
+        # Overlay lets the close button float in the very corner instead of
+        # sitting inline with the title (which made the right margin look wider
+        # and aligned the [x] with the track name).
+        overlay = Gtk.Overlay()
+        self.add(overlay)
 
-        # Header: song title + close button
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=15)
+        outer.set_margin_top(9)
+        outer.set_margin_bottom(15)
+        outer.set_margin_start(15)
+        outer.set_margin_end(15)
+        overlay.add(outer)
+
+        # Header: song title only (close button is overlaid in the corner)
         header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
 
         lbl = Gtk.Label(label=title)
@@ -110,19 +118,27 @@ class VotePopup(Gtk.Window):
         lbl.set_max_width_chars(32)
         lbl.set_hexpand(True)
         lbl.set_halign(Gtk.Align.START)
+        # Reserve space on the right so a long title ellipsizes before it would
+        # run under the corner close button.
+        lbl.set_margin_end(10)
         lbl.get_style_context().add_class("song-title")
 
-        x_btn = Gtk.Button(label="✕")
-        x_btn.get_style_context().add_class("close-btn")
-        x_btn.set_relief(Gtk.ReliefStyle.NONE)
-        x_btn.connect("clicked", lambda *_: Gtk.main_quit())
-
         header.pack_start(lbl, True, True, 0)
-        header.pack_end(x_btn, False, False, 0)
         outer.pack_start(header, False, False, 0)
 
+        # Circular close button, anchored to the top-right corner (macOS-style).
+        x_btn = Gtk.Button(label="✕")
+        x_btn.get_style_context().add_class("close-btn")
+        x_btn.set_halign(Gtk.Align.END)
+        x_btn.set_valign(Gtk.Align.START)
+        x_btn.set_margin_top(3)
+        x_btn.set_margin_end(3)
+        x_btn.set_size_request(19, 19)
+        x_btn.connect("clicked", lambda *_: Gtk.main_quit())
+        overlay.add_overlay(x_btn)
+
         # Five vote buttons in a row
-        btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=11)
         for i in range(1, 6):
             b = Gtk.Button(label=str(i))
             b.set_size_request(44, 40)
