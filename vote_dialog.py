@@ -1,4 +1,5 @@
 import sys
+import os
 import math
 import gi
 gi.require_version('Gtk', '3.0')
@@ -6,26 +7,68 @@ from gi.repository import Gtk, Gdk, Pango
 
 title   = sys.argv[1] if len(sys.argv) > 1 else ""
 current = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else 0
+theme   = sys.argv[3] if len(sys.argv) > 3 else "system"
+
+
+def _resolve_dark(name):
+    if name == "day":
+        return False
+    if name == "night":
+        return True
+    # "system" (or anything unknown): follow the desktop's GTK preference.
+    try:
+        return bool(Gtk.Settings.get_default()
+                    .get_property("gtk-application-prefer-dark-theme"))
+    except Exception:
+        return True
+
+
+# Palettes mirror the app's theme tokens (frontend/src/App.css).
+DARK = {
+    "win_bg": "#1a1a1a", "win_border": "#3c3c3c",
+    "title": "#b0b0b0",
+    "btn_bg": "#2e2e2e", "btn_c": "#ffffff", "btn_border": "#4a4a4a",
+    "btn_hover_bg": "#3d3d3d", "btn_hover_border": "#666666", "btn_press_bg": "#222222",
+    "active_bg": "#ff5500", "active_border": "#cc4400", "active_c": "#ffffff", "active_hover_bg": "#e64d00",
+    "close_bg": "#333333", "close_c": "#999999", "close_hover_bg": "#ff3b30", "close_hover_c": "#ffffff",
+}
+LIGHT = {
+    "win_bg": "#ffffff", "win_border": "#e0e3e8",
+    "title": "#666666",
+    "btn_bg": "#eeeff2", "btn_c": "#111111", "btn_border": "#d0d4db",
+    "btn_hover_bg": "#e3e6ec", "btn_hover_border": "#b0b5bf", "btn_press_bg": "#d8dbe0",
+    "active_bg": "#ff5500", "active_border": "#cc4400", "active_c": "#ffffff", "active_hover_bg": "#e64d00",
+    "close_bg": "#e0e3e8", "close_c": "#888888", "close_hover_bg": "#ff3b30", "close_hover_c": "#ffffff",
+}
+
+dark = _resolve_dark(theme)
+P = DARK if dark else LIGHT
+
+
+def _hex_to_rgb(h):
+    h = h.lstrip("#")
+    return (int(h[0:2], 16) / 255.0, int(h[2:4], 16) / 255.0, int(h[4:6], 16) / 255.0)
+
 
 # background-image: none is required to override GTK's default gradient theme.
-CSS = b"""
+CSS = ("""
 window {
-    background-color: #1a1a1a;
-    border: 1px solid #3c3c3c;
+    background-color: %(win_bg)s;
+    border: 1px solid %(win_border)s;
     border-radius: 13px;
 }
 label.song-title {
-    color: #b0b0b0;
+    color: %(title)s;
     font-size: 12px;
 }
 button {
     background-image: none;
-    background-color: #2e2e2e;
-    color: #ffffff;
+    background-color: %(btn_bg)s;
+    color: %(btn_c)s;
     font-size: 15px;
     font-weight: bold;
     border-radius: 5px;
-    border: 1.5px solid #4a4a4a;
+    border: 1.5px solid %(btn_border)s;
     padding: 0;
     box-shadow: none;
     text-shadow: none;
@@ -35,28 +78,28 @@ button {
 }
 button:hover {
     background-image: none;
-    background-color: #3d3d3d;
-    border-color: #666666;
+    background-color: %(btn_hover_bg)s;
+    border-color: %(btn_hover_border)s;
 }
 button:active {
     background-image: none;
-    background-color: #222;
+    background-color: %(btn_press_bg)s;
 }
 button.vote-active {
     background-image: none;
-    background-color: #ff5500;
-    border-color: #cc4400;
-    color: #ffffff;
+    background-color: %(active_bg)s;
+    border-color: %(active_border)s;
+    color: %(active_c)s;
 }
 button.vote-active:hover {
     background-image: none;
-    background-color: #e64d00;
+    background-color: %(active_hover_bg)s;
 }
 button.close-btn {
     background-image: none;
-    background-color: #333333;
+    background-color: %(close_bg)s;
     border: none;
-    color: #999999;
+    color: %(close_c)s;
     font-size: 10px;
     min-width: 19px;
     min-height: 19px;
@@ -67,10 +110,10 @@ button.close-btn {
 }
 button.close-btn:hover {
     background-image: none;
-    background-color: #ff3b30;
-    color: #ffffff;
+    background-color: %(close_hover_bg)s;
+    color: %(close_hover_c)s;
 }
-"""
+""" % P).encode()
 
 
 class VotePopup(Gtk.Window):
@@ -83,6 +126,9 @@ class VotePopup(Gtk.Window):
         self.set_resizable(False)
         self.set_skip_taskbar_hint(True)
         self.set_skip_pager_hint(True)
+
+        self._bg = _hex_to_rgb(P["win_bg"])
+        self._border = _hex_to_rgb(P["win_border"])
 
         # Enable RGBA visual for potential compositor transparency support.
         screen = self.get_screen()
@@ -154,7 +200,7 @@ class VotePopup(Gtk.Window):
     def _on_draw(self, widget, cr):
         # set_app_paintable(True) makes GTK skip rendering the CSS `window`
         # background, so WE own all background painting here. Draw the rounded
-        # dark card + border ourselves; the corners outside the radius stay
+        # card + border ourselves; the corners outside the radius stay
         # transparent (RGBA visual). Returning False lets the default handler
         # paint the child widgets on top. (The CSS `window` rule is the
         # fallback for the no-RGBA-visual path where app_paintable is off.)
@@ -178,10 +224,10 @@ class VotePopup(Gtk.Window):
         cr.arc(x0 + r, y0 + r, r, 180 * deg, 270 * deg)
         cr.close_path()
 
-        cr.set_source_rgba(0x1a / 255, 0x1a / 255, 0x1a / 255, 1.0)  # #1a1a1a
+        cr.set_source_rgba(self._bg[0], self._bg[1], self._bg[2], 1.0)
         cr.fill_preserve()
         cr.set_line_width(1)
-        cr.set_source_rgba(0x3c / 255, 0x3c / 255, 0x3c / 255, 1.0)  # #3c3c3c
+        cr.set_source_rgba(self._border[0], self._border[1], self._border[2], 1.0)
         cr.stroke()
         return False
 
@@ -199,11 +245,29 @@ win.connect("destroy", Gtk.main_quit)
 win.show_all()
 win.present()
 
-# Position near GNOME notification: top-centre of the primary monitor
+# Position the popup to match where the desktop shows notifications. There is
+# no standard API to query the notification daemon's placement, so this is a
+# per-desktop heuristic based on each DE's default corner.
 display = Gdk.Display.get_default()
 monitor = display.get_primary_monitor()
-geo     = monitor.get_geometry()
-w, _h   = win.get_size()
-win.move(geo.x + (geo.width - w) // 2, geo.y + 72)
+area    = monitor.get_workarea()  # excludes panels/docks, unlike get_geometry()
+w, h    = win.get_size()
+margin  = 12
+desktop = os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
+
+if "gnome" in desktop:
+    # GNOME Shell shows notifications at the top centre.
+    x = area.x + (area.width - w) // 2
+    y = area.y + margin
+elif "kde" in desktop or "plasma" in desktop:
+    # KDE Plasma shows them near the system tray (bottom-right by default).
+    x = area.x + area.width - w - margin
+    y = area.y + area.height - h - margin
+else:
+    # XFCE, Cinnamon, MATE, Budgie, LXQt, elementary, …: top-right by default.
+    x = area.x + area.width - w - margin
+    y = area.y + margin
+
+win.move(x, y)
 
 Gtk.main()

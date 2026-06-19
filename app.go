@@ -122,9 +122,16 @@ func (a *App) showLinuxVoteDialog(songID string) {
 	// Force GDK_BACKEND=x11 so the window runs under XWayland: Wayland's
 	// compositor otherwise withholds focus from undecorated popup windows,
 	// making the vote buttons non-interactive.
+	// Pass the app's theme so the popup matches light/dark; "system" lets the
+	// script follow the desktop's GTK preference.
+	theme := "system"
+	if cfg, err := a.GetConfig(); err == nil && cfg.Theme != "" {
+		theme = cfg.Theme
+	}
+
 	if pythonPath, err := exec.LookPath("python3"); err == nil {
 		var stdout bytes.Buffer
-		cmd := exec.Command(pythonPath, "-c", linuxVoteScript, song.title, strconv.Itoa(song.currentVote))
+		cmd := exec.Command(pythonPath, "-c", linuxVoteScript, song.title, strconv.Itoa(song.currentVote), theme)
 		cmd.Stdout = &stdout
 		cmd.Env = append(os.Environ(), "GDK_BACKEND=x11")
 		_ = cmd.Run() // non-zero exit = user cancelled; still check stdout
@@ -179,7 +186,10 @@ func (a *App) NotifyNearEnd(songID, title string, currentVote int) error {
 		Subtitle:   title,
 		CategoryID: categoryID,
 	}
-	if currentVote > 0 {
+	// On Linux the current vote is shown visually (highlighted button) in the
+	// popup, so the redundant body text is omitted. On Windows/macOS the toast
+	// buttons can't indicate it, so keep the text there.
+	if currentVote > 0 && goruntime.GOOS != "linux" {
 		opts.Body = fmt.Sprintf("Your vote: %d", currentVote)
 	}
 	return runtime.SendNotificationWithActions(a.ctx, opts)
