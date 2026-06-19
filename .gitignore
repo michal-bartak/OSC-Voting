@@ -5,3 +5,4 @@ frontend/package.json.md5
 frontend/wailsjs/
 docs/.astro/
 docs/dist/
+__pycache__/
