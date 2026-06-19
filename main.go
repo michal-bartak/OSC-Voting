@@ -2,6 +2,8 @@ package main
 
 import (
 	"embed"
+	"os"
+	"runtime"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -14,6 +16,14 @@ import (
 var assets embed.FS
 
 func main() {
+	// On Linux, XWayland gives WebKit2GTK proper GPU acceleration for CSS
+	// filters. Native Wayland uses DMA-buf which falls back to software
+	// rendering for blur/opacity on many driver configurations.
+	// Respect explicit user override via GDK_BACKEND env var.
+	if runtime.GOOS == "linux" && os.Getenv("GDK_BACKEND") == "" {
+		os.Setenv("GDK_BACKEND", "x11")
+	}
+
 	app := NewApp()
 
 	width, height := 1200, 820
