@@ -331,17 +331,42 @@ jobs:
     needs: [prepare, build]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
       - uses: actions/download-artifact@v8
         with:
           pattern: dist-*
           merge-multiple: true
           path: dist
+      - name: Extract changelog section
+        id: changelog
+        run: |
+          version="$(tr -d ' \n\r' < VERSION)"
+          # Print the body of the "## [<version>] ..." section, up to the next "## [" heading.
+          notes="$(awk -v ver="$version" '
+            index($0, "## [" ver "]") == 1 { flag=1; next }
+            /^## \[/ && flag { flag=0 }
+            flag { print }
+          ' CHANGELOG.md)"
+          # Trim leading/trailing blank lines.
+          notes="$(printf '%s\n' "$notes" | sed -e '/./,$!d' | tac | sed -e '/./,$!d' | tac)"
+          if [ -z "$notes" ]; then
+            echo "::warning::No CHANGELOG.md section found for version $version"
+          fi
+          {
+            echo "notes<<__CHANGELOG_EOF__"
+            echo "$notes"
+            echo "__CHANGELOG_EOF__"
+          } >> "$GITHUB_OUTPUT"
       - uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.prepare.outputs.tag }}
           draft: ${{ inputs.draft }}
           generate_release_notes: true
           body: |
+            ${{ steps.changelog.outputs.notes }}
+
             ### Installing
 
             - **macOS:** Open the `.dmg`, drag **OSC Voting** to the Applications folder, then eject the disk image. The app is unsigned, so Gatekeeper will block it on first launch. Two ways to fix this:

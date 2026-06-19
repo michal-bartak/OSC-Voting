@@ -39,3 +39,26 @@ wails dev
 ```
 
 Output lands in `build/bin/`. The Makefile also provides `make build-linux` and `make build-windows` for cross-platform targets, though cross-compilation requires the matching toolchain and is best left to CI.
+
+## Cutting a release
+
+Releases are produced by the **Release** GitHub Actions workflow
+(`.github/workflows/release.yml`), triggered manually from the Actions tab. It
+builds all three platforms (Windows `.exe`/`.msi`, macOS `.dmg`, Linux
+`.deb`/`.rpm`) and publishes a GitHub release.
+
+The release description is assembled from three parts: the matching
+**`CHANGELOG.md`** section (top), the install instructions, and GitHub's
+auto-generated **"What's Changed"** list.
+
+To cut a release:
+
+1. **Update `CHANGELOG.md`** — rename the `## [Unreleased]` heading to
+   `## [X.Y.Z] - YYYY-MM-DD` and start a fresh empty `## [Unreleased]` above it.
+   The heading must match the `VERSION` file exactly (that's how the workflow
+   finds the section to inject).
+2. **Bump `VERSION`** to `X.Y.Z`.
+3. Commit, then create and push the tag: `git tag vX.Y.Z && git push origin vX.Y.Z`
+   (the workflow verifies the tag equals `v` + `VERSION`).
+4. Run the **Release** workflow, entering the tag. Use the *draft* option to
+   review the generated release before publishing.
