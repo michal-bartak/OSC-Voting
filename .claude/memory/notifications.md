@@ -64,6 +64,44 @@ settings).
 | Windows 10/11 | Windows Toast with up to 5 action buttons | None required | Needs valid AppUserModelId |
 | Linux | libnotify/D-Bus; GNOME 42+ and KDE support actions | None required | Action buttons best-effort — silently ignored on many DEs |
 
+## Linux vote popup (`vote_dialog.py`)
+
+GNOME caps notification actions at 3, so on Linux the notification registers a single
+`vote-linux` "Vote…" action; `OnNotificationResponse` (action `rate`) calls
+`showLinuxVoteDialog`, which runs the embedded `vote_dialog.py` via `python3 -c`
+(embedded with `//go:embed`, so nothing extra is shipped). Args: `title currentVote theme`.
+Fallback chain if `python3` absent: `zenity --list` → `runtime.WindowShow`.
+
+Key implementation facts / gotchas:
+- **Background must be painted in code, not CSS.** `set_app_paintable(True)` (needed for the
+  RGBA visual / transparent rounded corners) makes GTK skip rendering the CSS `window`
+  background entirely — so the popup looked transparent on a real compositor. `_on_draw`
+  paints the rounded card + border itself with a cairo rounded-rect path. The CSS `window`
+  rule remains only as the fallback for the no-RGBA-visual path.
+- **Rounded corners** come from that cairo path (`r=13`), NOT CSS `border-radius` (which is
+  ignored under `app_paintable`).
+- **Close button** is a circular button overlaid via `Gtk.Overlay` in the top-right corner
+  (`halign=END, valign=START`), not inline in the title row — that previously made the right
+  margin look wider and aligned `✕` with the title.
+- **Theme**: `DARK`/`LIGHT` palettes mirror `frontend/src/App.css` tokens. `"system"` is
+  resolved in Go via `IsSystemDark()` (gsettings) before launching — NOT inside the script.
+  The script's own `gtk-application-prefer-dark-theme` probe is unreliable and is only a last
+  resort, because it doesn't reflect GNOME's `color-scheme`.
+- **Positioning** is a per-DE heuristic on `XDG_CURRENT_DESKTOP` using `monitor.get_workarea()`
+  (respects panels): GNOME → top-centre, KDE/Plasma → bottom-right, others → top-right. There
+  is no API to query the notification daemon's actual placement.
+- Notification **Body** ("Your vote: N") is omitted on Linux (the popup shows the current vote
+  as a highlighted button) but kept on Windows/macOS where toast buttons can't indicate it.
+
+## Frontend theme application (`theme.ts`)
+
+`applyTheme(theme)` sets `data-theme` on `<html>`. On Linux, `"system"` is resolved via the
+`IsSystemDark()` Go binding (gsettings) — WebKitGTK ignores `prefers-color-scheme` — and
+re-polled every 5s. **Race fix:** a module-level `_generation` counter is bumped per call;
+async system-theme resolves capture their generation and bail if superseded. Without it,
+switching from `system` to an explicit theme left an in-flight `IsSystemDark()` (or a late
+poll tick) to apply its stale result and revert the theme a few seconds later.
+
 ## SC Widget `getDuration`
 
 `getDuration(callback: (ms: number) => void)` was added to the `SCWidget` interface in
