@@ -136,15 +136,18 @@ Applies to any component containing iframes, videos, or other expensive browser-
 
 When Go structs change (e.g. adding fields to Config), `wails dev` auto-regenerates `models.ts` immediately. No manual sync needed. However, if TypeScript code references the new fields before regeneration, there will be a brief TS error. Safe to ignore — it resolves on next hot reload.
 
-## Linux multi-monitor rendering issues on Wayland (confirmed fixed)
+## Linux Wayland: slow CSS filter rendering and multi-monitor issues (confirmed fixed)
 
-**Symptom:** Window opens on the wrong display or renders incorrectly on multi-monitor Wayland setups (observed on Ubuntu 24.04).
+**Symptom:** CSS `filter: blur()` and opacity transitions are slow/CPU-rendered on native Wayland. Also: window opens on wrong display on multi-monitor Wayland setups.
 
-**Root cause:** GTK3/WebKit2GTK native Wayland backend has multi-monitor positioning issues in some configurations.
+**Root cause:** GTK3/WebKit2GTK native Wayland uses DMA-buf buffer sharing which falls back to software rendering for CSS filter effects on many driver configurations (Mesa + Mutter/KWin). XWayland's GLX path is GPU-accelerated. Future WebKit2GTK versions may fix the native Wayland path.
 
-**Fix:** Force X11 backend (XWayland) via `GDK_BACKEND=x11`. Both approaches confirmed working:
+**Fix:** Force X11 backend (XWayland) via `GDK_BACKEND=x11`:
 
-- One-off: `GDK_BACKEND=x11 OSC-Voting`
-- Permanent: edit `/usr/share/applications/osc-voting.desktop`, change `Exec=OSC-Voting` → `Exec=env GDK_BACKEND=x11 OSC-Voting`
+- One-off from terminal: `GDK_BACKEND=x11 OSC-Voting`
+- Via Makefile: `make run` or `make dev` (sets it automatically on Linux)
+- Permanent via `.desktop` file: `Exec=env GDK_BACKEND=x11 /usr/bin/OSC-Voting` — shipped in `build/linux/osc-voting.desktop`
 
-No in-app config toggle — the env var must be set before GTK initialises, so it can only be applied at launch time from outside the app. Documented in README under Troubleshooting.
+**GNOME re-login required:** After installing or modifying the `.desktop` file, a full re-login is needed for GNOME Shell to pick up the change. Settings → Apps uses a different launch path and does NOT require re-login (useful for quick verification).
+
+No in-app config toggle — the env var must be set before GTK initialises.

@@ -3,26 +3,16 @@ title: Troubleshooting
 description: Solutions for known issues with OSC Voting
 ---
 
-## Linux — multi-monitor rendering issues on Wayland
+## Linux — Wayland rendering performance
 
-On some multi-monitor Wayland setups (e.g. Ubuntu 24.04) the window may open on the wrong display or render incorrectly. The app runs natively on Wayland by default; forcing the GTK backend to X11 (via XWayland) resolves it.
+The shipped `.desktop` file launches the app under XWayland (`GDK_BACKEND=x11`), which gives WebKit2GTK proper GPU-accelerated rendering for CSS effects and fixes multi-monitor positioning issues on some compositors. **This is handled automatically when you install via the provided package — no manual steps needed.**
 
-**One-off (terminal):**
+:::note
+After installing or updating the `.desktop` file, a **log out and back in** is required for GNOME Shell to pick up the change. Launching from *Settings → Apps* does not need a re-login and can be used to verify it works immediately.
+:::
+
+If you are running the binary directly without the `.desktop` file (e.g. from a terminal or custom launcher), animations may appear sluggish and multi-monitor positioning may be off. Prefix the command with the env var:
+
 ```bash
 GDK_BACKEND=x11 OSC-Voting
 ```
-
-**Permanent, per-app — edit the `.desktop` file:**
-```bash
-sudo nano /usr/share/applications/osc-voting.desktop
-```
-Change the `Exec=` line from:
-```
-Exec=OSC-Voting
-```
-to:
-```
-Exec=env GDK_BACKEND=x11 OSC-Voting
-```
-
-Save and log out/in. The launcher will now always start the app under XWayland while leaving everything else unaffected.
