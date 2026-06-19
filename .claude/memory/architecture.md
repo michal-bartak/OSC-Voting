@@ -14,7 +14,7 @@ metadata:
 | `main.go` | Wails entry point; window config (1200×820, min 900×600, dark bg #121212) |
 | `version.go` | Embeds VERSION file at compile time |
 | `models.go` | Shared structs: Song, AppState, Config |
-| `app.go` | All Wails-bound methods (Login, Logout, IsLoggedIn, GetSongs, SubmitVote, OpenCommentInBrowser) |
+| `app.go` | All Wails-bound methods (Login, Logout, IsLoggedIn, GetSongs, SubmitVote, OpenCommentInBrowser, NotifyNearEnd, notification settings updaters) |
 | `client.go` | HTTP client + cookiejar; saveSession/loadSession/clearSession |
 | `parser.go` | Scrapes /voting HTML with goquery; extracts songs + challengeNumber |
 | `config.go` | GetConfig / SaveConfig — reads/writes ~/.config/osc/config.json |
@@ -33,13 +33,16 @@ type AppState struct {
     ChallengeNumber int    `json:"challengeNumber"`
 }
 type Config struct {
-    AutoScrollToUnvoted *bool  `json:"autoScrollToUnvoted,omitempty"`  // default true
-    FollowPlayback      *bool  `json:"followPlayback,omitempty"`       // default true
-    Email               string `json:"email,omitempty"`
-    Password            string `json:"password,omitempty"`
-    Theme               string `json:"theme,omitempty"`       // "day"|"night"|"system"
-    DisplayEmail        string `json:"displayEmail,omitempty"`
-    PlayerSize          string `json:"playerSize,omitempty"` // "minimal"|"medium"|"large"
+    AutoScrollToUnvoted   *bool  `json:"autoScrollToUnvoted,omitempty"`  // default true
+    FollowPlayback        *bool  `json:"followPlayback,omitempty"`       // default true
+    Email                 string `json:"email,omitempty"`
+    Password              string `json:"password,omitempty"`
+    Theme                 string `json:"theme,omitempty"`       // "day"|"night"|"system"
+    DisplayEmail          string `json:"displayEmail,omitempty"`
+    PlayerSize            string `json:"playerSize,omitempty"` // "minimal"|"medium"|"large"
+    NotificationsEnabled  *bool  `json:"notificationsEnabled,omitempty"`  // default true
+    NotificationThreshold int    `json:"notificationThreshold,omitempty"` // 50-95, default 80
+    NotificationSkipVoted *bool  `json:"notificationSkipVoted,omitempty"` // default false
 }
 ```
 
@@ -93,6 +96,7 @@ export interface SongItemHandle {
 3. Vote click: optimistic update in React state → `SubmitVote(id, points)` → revert on error
 4. SC playback: iframe Widget API PLAY/PAUSE/FINISH/PLAY_PROGRESS events; parent VotingPage manages `playingId` + `isPaused`
 5. Comment: `positionRef.current` (updated by PLAY_PROGRESS, reset to 0 by `playFromStart()`) → `OpenCommentInBrowser(url, ms)`
+6. Near-end notification: PLAY_PROGRESS checks `position/duration >= nearEndThreshold` → `onNearEnd(id)` → VotingPage calls `NotifyNearEnd(id, title, currentVote)` → Go sends OS notification with vote action buttons → `OnNotificationResponse` emits `"notification:vote"` event → frontend `EventsOn` calls `handleVote`
 6. Description: `description` state populated in READY handler from `getCurrentSound().description`; `descOpen` state drives a modal popup
 
 ## Wails binding namespace
@@ -104,6 +108,8 @@ import {
   GetSongs, GetConfig, SaveConfig,
   SubmitVote, OpenCommentInBrowser,
   UpdateTheme, UpdateAutoScroll, UpdateFollowPlayback, UpdatePlayerSize,
+  NotifyNearEnd,
+  UpdateNotificationsEnabled, UpdateNotificationThreshold, UpdateNotificationSkipVoted,
   AppName, AppVersion, OpenURL,
   GetConfigPath,
 } from '../../wailsjs/go/main/App';

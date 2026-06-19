@@ -3,24 +3,39 @@ package main
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
+	"os/exec"
+	goruntime "runtime"
+	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
+//go:embed vote_dialog.py
+var linuxVoteScript string
+
 const appName = "OSC Voting"
+
+type pendingSong struct {
+	title       string
+	currentVote int
+}
 
 // App is the main application struct bound to the Wails frontend.
 type App struct {
 	ctx             context.Context
 	httpClient      *http.Client
 	challengeNumber int
+	pendingSongs    sync.Map // songID → pendingSong
 }
 
 func NewApp() *App {
@@ -41,6 +56,179 @@ func (a *App) OpenURL(url string) {
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	a.loadSession()
+	a.initNotifications()
+}
+
+func (a *App) initNotifications() {
+	if err := runtime.InitializeNotifications(a.ctx); err != nil {
+		log.Printf("notifications: init failed: %v", err)
+		return
+	}
+	if _, err := runtime.RequestNotificationAuthorization(a.ctx); err != nil {
+		log.Printf("notifications: authorization request failed: %v", err)
+	}
+
+	if goruntime.GOOS == "linux" {
+		// GNOME shows at most 3 action buttons; use a single trigger that opens a zenity dialog.
+		if err := runtime.RegisterNotificationCategory(a.ctx, runtime.NotificationCategory{
+			ID:      "vote-linux",
+			Actions: []runtime.NotificationAction{{ID: "rate", Title: "Vote…"}},
+		}); err != nil {
+			log.Printf("notifications: register category failed: %v", err)
+			return
+		}
+	} else {
+		if err := runtime.RegisterNotificationCategory(a.ctx, runtime.NotificationCategory{
+			ID: "vote",
+			Actions: []runtime.NotificationAction{
+				{ID: "1", Title: "1"},
+				{ID: "2", Title: "2"},
+				{ID: "3", Title: "3"},
+				{ID: "4", Title: "4"},
+				{ID: "5", Title: "5"},
+			},
+		}); err != nil {
+			log.Printf("notifications: register category failed: %v", err)
+			return
+		}
+	}
+
+	runtime.OnNotificationResponse(a.ctx, func(result runtime.NotificationResult) {
+		if result.Error != nil {
+			return
+		}
+		r := result.Response
+		if goruntime.GOOS == "linux" && r.ActionIdentifier == "rate" {
+			go a.showLinuxVoteDialog(r.ID)
+			return
+		}
+		// Only forward our numbered vote actions; ignore the default "clicked notification" action.
+		if r.ActionIdentifier < "1" || r.ActionIdentifier > "5" {
+			return
+		}
+		runtime.EventsEmit(a.ctx, "notification:vote", r.ID, r.ActionIdentifier)
+	})
+}
+
+func (a *App) showLinuxVoteDialog(songID string) {
+	defer a.pendingSongs.Delete(songID)
+	v, ok := a.pendingSongs.Load(songID)
+	if !ok {
+		return
+	}
+	song := v.(pendingSong)
+
+	// Primary: custom GTK3 popup via embedded Python script.
+	// Force GDK_BACKEND=x11 so the window runs under XWayland: Wayland's
+	// compositor otherwise withholds focus from undecorated popup windows,
+	// making the vote buttons non-interactive.
+	// Pass the app's theme so the popup matches light/dark. Resolve "system"
+	// here via IsSystemDark() (gsettings) — the same detection the app UI uses
+	// — because the GTK popup's own prefer-dark probe is unreliable and would
+	// otherwise disagree with the app (light popup over a dark app).
+	theme := "system"
+	if cfg, err := a.GetConfig(); err == nil && cfg.Theme != "" {
+		theme = cfg.Theme
+	}
+	if theme == "system" {
+		if a.IsSystemDark() {
+			theme = "night"
+		} else {
+			theme = "day"
+		}
+	}
+
+	if pythonPath, err := exec.LookPath("python3"); err == nil {
+		var stdout bytes.Buffer
+		cmd := exec.Command(pythonPath, "-c", linuxVoteScript, song.title, strconv.Itoa(song.currentVote), theme)
+		cmd.Stdout = &stdout
+		cmd.Env = append(os.Environ(), "GDK_BACKEND=x11")
+		_ = cmd.Run() // non-zero exit = user cancelled; still check stdout
+		vote := strings.TrimSpace(stdout.String())
+		if vote >= "1" && vote <= "5" {
+			runtime.EventsEmit(a.ctx, "notification:vote", songID, vote)
+		}
+		return
+	}
+
+	// Fallback: zenity list dialog.
+	if zenityPath, err := exec.LookPath("zenity"); err == nil {
+		args := []string{
+			"--list", "--radiolist",
+			"--column=", "--column=Vote",
+			"--title=Rate this track",
+			"--text=" + song.title,
+			"--hide-header",
+			"--width=180", "--height=260",
+		}
+		for i := 1; i <= 5; i++ {
+			sel := "FALSE"
+			if i == song.currentVote {
+				sel = "TRUE"
+			}
+			args = append(args, sel, strconv.Itoa(i))
+		}
+		out, err := exec.Command(zenityPath, args...).Output()
+		if err != nil {
+			return
+		}
+		vote := strings.TrimSpace(string(out))
+		if vote >= "1" && vote <= "5" {
+			runtime.EventsEmit(a.ctx, "notification:vote", songID, vote)
+		}
+		return
+	}
+
+	// Last resort: bring the app window to the foreground.
+	runtime.WindowShow(a.ctx)
+}
+
+func (a *App) NotifyNearEnd(songID, title string, currentVote int) error {
+	categoryID := "vote"
+	if goruntime.GOOS == "linux" {
+		a.pendingSongs.Store(songID, pendingSong{title: title, currentVote: currentVote})
+		categoryID = "vote-linux"
+	}
+	opts := runtime.NotificationOptions{
+		ID:         songID,
+		Title:      "Rate this track",
+		Subtitle:   title,
+		CategoryID: categoryID,
+	}
+	// On Linux the current vote is shown visually (highlighted button) in the
+	// popup, so the redundant body text is omitted. On Windows/macOS the toast
+	// buttons can't indicate it, so keep the text there.
+	if currentVote > 0 && goruntime.GOOS != "linux" {
+		opts.Body = fmt.Sprintf("Your vote: %d", currentVote)
+	}
+	return runtime.SendNotificationWithActions(a.ctx, opts)
+}
+
+func (a *App) UpdateNotificationsEnabled(enabled bool) error {
+	cfg, err := a.GetConfig()
+	if err != nil {
+		return err
+	}
+	cfg.NotificationsEnabled = boolPtr(enabled)
+	return a.SaveConfig(*cfg)
+}
+
+func (a *App) UpdateNotificationThreshold(pct int) error {
+	cfg, err := a.GetConfig()
+	if err != nil {
+		return err
+	}
+	cfg.NotificationThreshold = pct
+	return a.SaveConfig(*cfg)
+}
+
+func (a *App) UpdateNotificationSkipVoted(val bool) error {
+	cfg, err := a.GetConfig()
+	if err != nil {
+		return err
+	}
+	cfg.NotificationSkipVoted = boolPtr(val)
+	return a.SaveConfig(*cfg)
 }
 
 func (a *App) IsLoggedIn() bool {

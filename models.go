@@ -13,13 +13,16 @@ type AppState struct {
 }
 
 type Config struct {
-	AutoScrollToUnvoted *bool  `json:"autoScrollToUnvoted,omitempty"`
-	FollowPlayback      *bool  `json:"followPlayback,omitempty"`
-	Email               string `json:"email,omitempty"`
-	Password            string `json:"password,omitempty"`
-	Theme               string `json:"theme,omitempty"`        // "day" | "night" | "system" (default)
-	DisplayEmail        string `json:"displayEmail,omitempty"` // if set, shown instead of real email in UI
-	PlayerSize          string `json:"playerSize,omitempty"`   // "minimal" | "medium" | "large" (default)
-	WindowWidth         int    `json:"windowWidth,omitempty"`
-	WindowHeight        int    `json:"windowHeight,omitempty"`
+	AutoScrollToUnvoted    *bool  `json:"autoScrollToUnvoted,omitempty"`
+	FollowPlayback         *bool  `json:"followPlayback,omitempty"`
+	Email                  string `json:"email,omitempty"`
+	Password               string `json:"password,omitempty"`
+	Theme                  string `json:"theme,omitempty"`        // "day" | "night" | "system" (default)
+	DisplayEmail           string `json:"displayEmail,omitempty"` // if set, shown instead of real email in UI
+	PlayerSize             string `json:"playerSize,omitempty"`   // "minimal" | "medium" | "large" (default)
+	WindowWidth            int    `json:"windowWidth,omitempty"`
+	WindowHeight           int    `json:"windowHeight,omitempty"`
+	NotificationsEnabled   *bool  `json:"notificationsEnabled,omitempty"`
+	NotificationThreshold  int    `json:"notificationThreshold,omitempty"` // 50-95, default 80
+	NotificationSkipVoted  *bool  `json:"notificationSkipVoted,omitempty"`
 }

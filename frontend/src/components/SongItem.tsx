@@ -21,6 +21,8 @@ interface Props {
   onPause: (id: string) => void;
   onFinish: (id: string) => void;
   onVote: (id: string, points: number) => void;
+  onNearEnd: (id: string) => void;
+  nearEndThreshold?: number;
 }
 
 export interface SongItemHandle {
@@ -31,11 +33,17 @@ export interface SongItemHandle {
 }
 
 const SongItem = forwardRef<SongItemHandle, Props>(
-  ({ song, isPlaying, isDark, playerSize = 'large', isOtherActive, onPlay, onPause, onFinish, onVote }, ref) => {
+  ({ song, isPlaying, isDark, playerSize = 'large', isOtherActive, onPlay, onPause, onFinish, onVote, onNearEnd, nearEndThreshold = 0.80 }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const widgetRef = useRef<SCWidget | null>(null);
     const positionRef = useRef(0);
+    const durationMsRef = useRef(0);
+    const nearEndFiredRef = useRef(false);
+    const onNearEndRef = useRef(onNearEnd);
+    onNearEndRef.current = onNearEnd;
+    const nearEndThresholdRef = useRef(nearEndThreshold);
+    nearEndThresholdRef.current = nearEndThreshold;
     const onPlayRef = useRef(onPlay);
     onPlayRef.current = onPlay;
     const onPauseRef = useRef(onPause);
@@ -85,16 +93,31 @@ const SongItem = forwardRef<SongItemHandle, Props>(
       widgetRef.current = widget;
       positionRef.current = 0;
 
-      widget.bind(window.SC.Widget.Events.PLAY,   () => onPlayRef.current(song.id));
+      widget.bind(window.SC.Widget.Events.PLAY,   () => {
+        nearEndFiredRef.current = false;
+        onPlayRef.current(song.id);
+      });
       widget.bind(window.SC.Widget.Events.PAUSE,  () => onPauseRef.current(song.id));
-      widget.bind(window.SC.Widget.Events.FINISH, () => onFinishRef.current(song.id));
+      widget.bind(window.SC.Widget.Events.FINISH, () => {
+        nearEndFiredRef.current = false;
+        onFinishRef.current(song.id);
+      });
       widget.bind(window.SC.Widget.Events.PLAY_PROGRESS, (data: unknown) => {
         const d = data as { currentPosition?: number };
         if (typeof d?.currentPosition === 'number') {
           positionRef.current = d.currentPosition;
+          if (
+            !nearEndFiredRef.current &&
+            durationMsRef.current > 0 &&
+            positionRef.current / durationMsRef.current >= nearEndThresholdRef.current
+          ) {
+            nearEndFiredRef.current = true;
+            onNearEndRef.current(song.id);
+          }
         }
       });
       widget.bind(window.SC.Widget.Events.READY, () => {
+        widget.getDuration(ms => { durationMsRef.current = ms; });
         widget.getCurrentSound(sound => {
           const raw = sound?.artwork_url ?? sound?.user?.avatar_url ?? null;
           setArtworkUrl(raw ? raw.replace('-large', '-t200x200') : null);

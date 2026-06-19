@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AppName, AppVersion, GetConfig, GetSongs, Logout, SaveWindowSize } from '../../wailsjs/go/main/App';
-import { WindowGetSize } from '../../wailsjs/runtime/runtime';
+import { AppName, AppVersion, GetConfig, GetSongs, Logout, NotifyNearEnd, SaveWindowSize, SubmitVote, UpdateNotificationsEnabled, UpdateNotificationSkipVoted, UpdateNotificationThreshold } from '../../wailsjs/go/main/App';
+import { EventsOn, WindowGetSize } from '../../wailsjs/runtime/runtime';
 import { main } from '../../wailsjs/go/models';
 import AboutPopup from './AboutPopup';
 import BottomBar from './BottomBar';
@@ -40,6 +40,9 @@ export default function VotingPage({ onLogout }: Props) {
   const [storedPassword, setStoredPassword] = useState('');
   const [storedTheme, setStoredTheme] = useState('system');
   const [playerSize, setPlayerSize] = useState<PlayerSize>('large');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [notificationThreshold, setNotificationThreshold] = useState(80);
+  const [notificationSkipVoted, setNotificationSkipVoted] = useState(false);
   const [appTitle, setAppTitle] = useState('OSC Voting');
   const [isDark, setIsDark] = useState(
     () => document.documentElement.getAttribute('data-theme') === 'dark'
@@ -93,6 +96,9 @@ export default function VotingPage({ onLogout }: Props) {
         setStoredPassword(cfg.password ?? '');
         setStoredTheme(cfg.theme ?? 'system');
         setPlayerSize((cfg.playerSize as PlayerSize) ?? 'large');
+        setNotificationsEnabled(cfg.notificationsEnabled ?? true);
+        setNotificationThreshold(cfg.notificationThreshold ?? 80);
+        setNotificationSkipVoted(cfg.notificationSkipVoted ?? false);
         if (cfg.autoScrollToUnvoted) {
           setTimeout(() => scrollToFirstUnvoted(state.songs), 150);
         }
@@ -211,6 +217,24 @@ export default function VotingPage({ onLogout }: Props) {
     );
   };
 
+  const handleNearEnd = (id: string) => {
+    if (!notificationsEnabled) return;
+    const song = songs.find(s => s.id === id);
+    if (!song) return;
+    if (notificationSkipVoted && song.currentVote > 0) return;
+    NotifyNearEnd(id, song.title, song.currentVote).catch(() => {});
+  };
+
+  useEffect(() => {
+    return EventsOn('notification:vote', (songId: string, actionId: string) => {
+      const points = parseInt(actionId, 10);
+      if (points >= 1 && points <= 5) {
+        handleVote(songId, points);
+        SubmitVote(songId, points).catch(() => {});
+      }
+    });
+  }, []);
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.code !== 'Space') return;
@@ -316,6 +340,9 @@ export default function VotingPage({ onLogout }: Props) {
           initialAutoScroll={autoScroll}
           initialFollowPlayback={followPlayback}
           initialPlayerSize={playerSize}
+          initialNotificationsEnabled={notificationsEnabled}
+          initialNotificationThreshold={notificationThreshold}
+          initialNotificationSkipVoted={notificationSkipVoted}
           onSave={(email, password, theme) => {
             setStoredEmail(email);
             setStoredPassword(password);
@@ -328,6 +355,9 @@ export default function VotingPage({ onLogout }: Props) {
           }}
           onFollowPlaybackChange={(val) => setFollowPlayback(val)}
           onPlayerSizeChange={(size) => setPlayerSize(size as PlayerSize)}
+          onNotificationsEnabledChange={(val) => setNotificationsEnabled(val)}
+          onNotificationThresholdChange={(val) => setNotificationThreshold(val)}
+          onNotificationSkipVotedChange={(val) => setNotificationSkipVoted(val)}
           onClose={() => setSettingsOpen(false)}
         />
       )}
@@ -370,6 +400,8 @@ export default function VotingPage({ onLogout }: Props) {
               onPause={handleEmbedPause}
               onFinish={handleFinish}
               onVote={handleVote}
+              onNearEnd={handleNearEnd}
+              nearEndThreshold={notificationThreshold / 100}
               ref={el => {
                 if (el) songRefs.current[song.id] = el;
                 else delete songRefs.current[song.id];

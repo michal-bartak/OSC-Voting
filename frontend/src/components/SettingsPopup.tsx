@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { GetConfigPath, Login, UpdateAutoScroll, UpdateFollowPlayback, UpdatePlayerSize, UpdateTheme } from '../../wailsjs/go/main/App';
+import { GetConfigPath, Login, UpdateAutoScroll, UpdateFollowPlayback, UpdateNotificationsEnabled, UpdateNotificationSkipVoted, UpdateNotificationThreshold, UpdatePlayerSize, UpdateTheme } from '../../wailsjs/go/main/App';
 import { applyTheme } from '../theme';
 
 interface Props {
@@ -10,10 +10,16 @@ interface Props {
   initialAutoScroll: boolean;
   initialFollowPlayback: boolean;
   initialPlayerSize?: string;
+  initialNotificationsEnabled?: boolean;
+  initialNotificationThreshold?: number;
+  initialNotificationSkipVoted?: boolean;
   onSave: (email: string, password: string, theme: string) => void;
   onAutoScrollChange?: (val: boolean) => void;
   onFollowPlaybackChange?: (val: boolean) => void;
   onPlayerSizeChange?: (size: string) => void;
+  onNotificationsEnabledChange?: (val: boolean) => void;
+  onNotificationThresholdChange?: (val: number) => void;
+  onNotificationSkipVotedChange?: (val: boolean) => void;
   onClose: () => void;
 }
 
@@ -26,13 +32,16 @@ const THEMES = [
 const SIZE_VALUES = ['minimal', 'medium', 'large'] as const;
 const SIZE_LABELS = ['Minimal', 'Medium', 'Large'];
 
-export default function SettingsPopup({ initialEmail, initialDisplayEmail, initialPassword, initialTheme, initialAutoScroll, initialFollowPlayback, initialPlayerSize, onSave, onAutoScrollChange, onFollowPlaybackChange, onPlayerSizeChange, onClose }: Props) {
+export default function SettingsPopup({ initialEmail, initialDisplayEmail, initialPassword, initialTheme, initialAutoScroll, initialFollowPlayback, initialPlayerSize, initialNotificationsEnabled = true, initialNotificationThreshold = 80, initialNotificationSkipVoted = false, onSave, onAutoScrollChange, onFollowPlaybackChange, onPlayerSizeChange, onNotificationsEnabledChange, onNotificationThresholdChange, onNotificationSkipVotedChange, onClose }: Props) {
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState(initialPassword);
   const [theme, setTheme] = useState(initialTheme || 'system');
   const [autoScroll, setAutoScroll] = useState(initialAutoScroll);
   const [followPlayback, setFollowPlayback] = useState(initialFollowPlayback);
   const [playerSize, setPlayerSize] = useState(initialPlayerSize || 'large');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(initialNotificationsEnabled);
+  const [notificationThreshold, setNotificationThreshold] = useState(initialNotificationThreshold);
+  const [notificationSkipVoted, setNotificationSkipVoted] = useState(initialNotificationSkipVoted);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [configPath, setConfigPath] = useState('');
@@ -83,6 +92,24 @@ export default function SettingsPopup({ initialEmail, initialDisplayEmail, initi
     setPlayerSize(size);
     UpdatePlayerSize(size).catch(() => {});
     onPlayerSizeChange?.(size);
+  };
+
+  const handleNotificationsEnabledToggle = (val: boolean) => {
+    setNotificationsEnabled(val);
+    UpdateNotificationsEnabled(val).catch(() => {});
+    onNotificationsEnabledChange?.(val);
+  };
+
+  const handleNotificationThresholdChange = (val: number) => {
+    setNotificationThreshold(val);
+    UpdateNotificationThreshold(val).catch(() => {});
+    onNotificationThresholdChange?.(val);
+  };
+
+  const handleNotificationSkipVotedToggle = (val: boolean) => {
+    setNotificationSkipVoted(val);
+    UpdateNotificationSkipVoted(val).catch(() => {});
+    onNotificationSkipVotedChange?.(val);
   };
 
   const handleCancel = () => {
@@ -174,6 +201,47 @@ export default function SettingsPopup({ initialEmail, initialDisplayEmail, initi
             />
             <span>Follow playback</span>
           </label>
+        </div>
+
+        <hr className="settings-divider" />
+
+        <div className="settings-section">
+          <div className="settings-section-label">Notifications</div>
+          <label className="settings-toggle">
+            <input
+              type="checkbox"
+              className="settings-toggle-checkbox"
+              checked={notificationsEnabled}
+              onChange={e => handleNotificationsEnabledToggle(e.target.checked)}
+            />
+            <span>Vote notifications near end of song</span>
+          </label>
+          {notificationsEnabled && (
+            <>
+              <div className="size-slider-wrap">
+                <span className="settings-row-label">Notify at {notificationThreshold}%</span>
+                <input
+                  type="range"
+                  className="size-slider"
+                  min={50}
+                  max={95}
+                  step={5}
+                  value={notificationThreshold}
+                  style={{ '--slider-pct': `${(notificationThreshold - 50) / 45 * 100}%` } as React.CSSProperties}
+                  onChange={e => handleNotificationThresholdChange(Number(e.target.value))}
+                />
+              </div>
+              <label className="settings-toggle">
+                <input
+                  type="checkbox"
+                  className="settings-toggle-checkbox"
+                  checked={notificationSkipVoted}
+                  onChange={e => handleNotificationSkipVotedToggle(e.target.checked)}
+                />
+                <span>Skip if already voted</span>
+              </label>
+            </>
+          )}
         </div>
 
         <hr className="settings-divider" />
