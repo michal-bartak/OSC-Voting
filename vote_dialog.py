@@ -1,4 +1,5 @@
 import sys
+import math
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, Pango
@@ -151,12 +152,37 @@ class VotePopup(Gtk.Window):
         self.connect("key-press-event", self._on_key)
 
     def _on_draw(self, widget, cr):
-        # Paint window background transparent so the CSS window colour shows
-        # cleanly without compositor compositing artifacts.
+        # set_app_paintable(True) makes GTK skip rendering the CSS `window`
+        # background, so WE own all background painting here. Draw the rounded
+        # dark card + border ourselves; the corners outside the radius stay
+        # transparent (RGBA visual). Returning False lets the default handler
+        # paint the child widgets on top. (The CSS `window` rule is the
+        # fallback for the no-RGBA-visual path where app_paintable is off.)
+        w = widget.get_allocated_width()
+        h = widget.get_allocated_height()
+        r = 13
+
         cr.set_source_rgba(0, 0, 0, 0)
-        cr.set_operator(1)  # cairo.OPERATOR_SOURCE
+        cr.set_operator(1)  # cairo.OPERATOR_SOURCE: clear to transparent
         cr.paint()
         cr.set_operator(2)  # cairo.OPERATOR_OVER
+
+        # Rounded-rect path, inset 0.5px so the 1px stroke stays crisp.
+        deg = math.pi / 180.0
+        x0, y0 = 0.5, 0.5
+        x1, y1 = w - 0.5, h - 0.5
+        cr.new_sub_path()
+        cr.arc(x1 - r, y0 + r, r, -90 * deg, 0 * deg)
+        cr.arc(x1 - r, y1 - r, r, 0 * deg, 90 * deg)
+        cr.arc(x0 + r, y1 - r, r, 90 * deg, 180 * deg)
+        cr.arc(x0 + r, y0 + r, r, 180 * deg, 270 * deg)
+        cr.close_path()
+
+        cr.set_source_rgba(0x1a / 255, 0x1a / 255, 0x1a / 255, 1.0)  # #1a1a1a
+        cr.fill_preserve()
+        cr.set_line_width(1)
+        cr.set_source_rgba(0x3c / 255, 0x3c / 255, 0x3c / 255, 1.0)  # #3c3c3c
+        cr.stroke()
         return False
 
     def _on_vote(self, widget, n):
