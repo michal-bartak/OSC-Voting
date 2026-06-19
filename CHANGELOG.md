@@ -15,26 +15,20 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **Vote reminders** — an optional OS notification near the end of each track
-  with 1–5 vote buttons. The playback threshold is configurable, and tracks you
-  have already voted on can be skipped.
-- **Linux vote popup** — a custom styled popup (opened from the notification's
-  "Vote…" action, since GNOME limits notifications to three buttons) showing all
-  five vote options, with light/dark theming, rounded corners, and a corner
-  close button. Popup position match where each desktop shows
-  notifications (GNOME top-centre, KDE bottom-right, others top-right)
+- **Vote reminders** — optional end-of-track notification with 1–5 vote buttons;
+  configurable threshold, can skip already-voted tracks.
+- **Linux vote popup** — styled popup with all five vote options (works around
+  GNOME's 3-button limit), light/dark themed, positioned per desktop.
 
 ### Changed
 
-- **Linux** — the app now runs under XWayland (`GDK_BACKEND=x11`) for
-  GPU-accelerated rendering and correct vote-popup focus and positioning.
+- **Linux** — runs under XWayland (`GDK_BACKEND=x11`) for GPU-accelerated
+  rendering and correct popup focus/positioning.
 
 ### Fixed
 
-- **Linux** — the app no longer briefly applies a theme and then reverts to
-  light a few seconds later when the theme is changed.
-- The dim/blur transition on other tracks no longer blinks when moving the
-  cursor between vote buttons.
+- **Linux** — theme no longer flickers back to light after switching.
+- Other-track dim/blur no longer blinks when moving between vote buttons.
 
 ## [1.0.0] - 2026-06-17
 
