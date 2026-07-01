@@ -23,16 +23,49 @@ sudo dnf install gtk3-devel webkit2gtk4.1-devel gcc-c++ pkgconf-pkg-config
 On older distros shipping only WebKit 4.0 (Ubuntu 22.04, RHEL 9), remove `"build:tags": "webkit2_41"` from `wails.json` and install `libwebkit2gtk-4.0-dev` / `webkit2gtk3-devel` instead.
 :::
 
-## Commands
+## Getting the source
 
 ```bash
 git clone https://github.com/michal-bartak/OSC-Voting.git
 cd OSC-Voting
 make build        # build for the current platform
-make dev          # hot-reload dev server
 ```
 
-Or invoke Wails directly:
+Output lands in `build/bin/`.
+
+## Make commands
+
+The `Makefile` wraps the common Wails and docs workflows.
+
+### App
+
+| Command | Description |
+|---------|-------------|
+| `make dev` | Hot-reload dev server (Go + Vite HMR). On Linux it sets `GDK_BACKEND=x11` so WebKit2GTK gets GPU-accelerated CSS filters. |
+| `make run` | Run the already-built binary from `build/bin/`. |
+| `make build` | Production build for the current platform (`wails build -clean`). |
+| `make build-linux` | Cross-build for `linux/amd64`. |
+| `make build-windows` | Cross-build for `windows/amd64`. |
+| `make build-all` | Build for macOS, Linux, and Windows in one go. |
+
+:::note
+Cross-compilation (`build-linux`, `build-windows`, `build-all`) requires the matching toolchain for each target and is best left to CI.
+:::
+
+### Documentation site
+
+This site is an [Astro Starlight](https://starlight.astro.build) project in `docs/`. These targets manage it (they auto-run `npm ci` on first use):
+
+| Command | Description |
+|---------|-------------|
+| `make docs` | Hot-reload dev server for live editing. Served at `http://localhost:4321/OSC-Voting/`. |
+| `make docs-build` | Build the static site into `docs/dist/` and stop — no server. Useful to confirm the build succeeds. |
+| `make docs-preview` | Build, then serve the result exactly as GitHub Pages will. Use this as a final check before pushing. |
+
+## Invoking Wails directly
+
+If you'd rather skip the Makefile:
+
 ```bash
 wails build -platform linux/amd64   # or: darwin/universal  windows/amd64
 wails dev
