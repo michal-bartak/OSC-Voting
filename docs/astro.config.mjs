@@ -17,6 +17,11 @@ export default defineConfig({
         replacesTitle: false,
       },
       social: { github: 'https://github.com/michal-bartak/OSC-Voting' },
+      components: {
+        // Adds KVR OneSynthChallenge links (site + SoundCloud) alongside the
+        // default social icons in the header's top-right corner.
+        SocialIcons: './src/components/SocialIcons.astro',
+      },
       customCss: ['./src/styles/custom.css'],
       sidebar: [
         { label: 'Home', link: '/' },

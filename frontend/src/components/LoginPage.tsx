@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { Login } from '../../wailsjs/go/main/App';
+import { BrowserOpenURL } from '../../wailsjs/runtime/runtime';
+
+const OSC_URL = 'https://www.onesynthchallenge.org/';
 
 interface Props {
   onSuccess: () => void;
@@ -33,6 +36,16 @@ export default function LoginPage({ onSuccess, initialEmail, initialError }: Pro
       <div className="login-card">
         <h1 className="login-title">OSC Voting</h1>
         <p className="login-subtitle">ONE SYNTH CHALLENGE</p>
+        <p className="login-hint">
+          Sign in with your{' '}
+          <a
+            href={OSC_URL}
+            onClick={e => { e.preventDefault(); BrowserOpenURL(OSC_URL); }}
+          >
+            onesynthchallenge.org
+          </a>{' '}
+          account.
+        </p>
         <form onSubmit={handleSubmit} className="login-form">
           <label className="field-label">Email</label>
           <input

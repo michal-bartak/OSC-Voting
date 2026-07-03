@@ -124,6 +124,11 @@ export default function VotingPage({ onLogout }: Props) {
   handlePlayRef.current = handlePlay;
   useEffect(() => {
     const onBlur = () => {
+      // reset sticky hover: mouseOut/mouseLeave don't fire once the window loses focus
+      if (hoverEnterTimer.current) { clearTimeout(hoverEnterTimer.current); hoverEnterTimer.current = null; }
+      if (hoverClearTimer.current) { clearTimeout(hoverClearTimer.current); hoverClearTimer.current = null; }
+      setHoveredSongId(null);
+
       for (const [id, handle] of Object.entries(songRefs.current)) {
         if (handle.getIframe() === document.activeElement) {
           handlePlayRef.current(id);

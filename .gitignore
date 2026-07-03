@@ -6,3 +6,6 @@ frontend/wailsjs/
 docs/.astro/
 docs/dist/
 __pycache__/
+.DS_Store
+# stray binary from `go build` in the module root (real build output goes to build/bin)
+/osc

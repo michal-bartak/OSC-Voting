@@ -75,6 +75,26 @@ if idx := strings.Index(trackURL, "?"); idx != -1 {
 
 Use `#t={mins}m{secs:02d}s` (fragment, SC's timed-comment anchor format) rather than `?t={secs}` (query param). The query param format was used initially but `#t=` is SC's canonical timed-comment deeplink format.
 
+**Caveat (see below):** the format is correct, but the desktop host does not honor it reliably, and there is no app-side fix. Do NOT try to "fix" it by changing the fragment format or the host.
+
+## Timed comment `#t=` ignored on desktop SoundCloud — no reliable app-side fix
+
+**Symptom (reported 2026-07):** 💬 opens the SC track page but playback starts at 0:00 instead of the passed timestamp. Reproduced on macOS (Chrome + Safari) and Linux; worked on Windows.
+
+**What was ruled out (do not re-investigate these):**
+- The app's position value is correct — `PLAY_PROGRESS`/`positionRef` is intact (near-end notifications fire), `Math.round` + `float64` IPC is fine, comment code path unchanged since it last worked.
+- Not the fragment format — `#t=1m30s`, `#t=1:30`, `#t=90s`, `#t=90` all behave identically.
+- Not network/environment — a URL fragment (`#…`) is never sent to the server; it's applied entirely client-side. Proxy/firewall cannot affect it.
+- Cache-busting query params (`?x=random`) do **not** help — a fresh tab still ignores the fragment once the browser's SoundCloud context is warm.
+
+**Root cause (deterministic, not a flaky API):** the **desktop** SoundCloud site is an SPA that only applies `#t=` on a genuine fresh page load — which in practice only happens on the very first open after the browser has been fully closed long enough that its background processes are gone. Once a SoundCloud context is warm, every subsequent open (even a new tab / cache-busted URL) is handled client-side without re-reading the hash → starts at 0:00. Consistent across Chrome/Safari/Linux. Windows "worked" only because its launch path more often produced a fresh load.
+
+**Mobile host does NOT work from the app (tried and reverted):** `m.soundcloud.com` *does* honor `#t=` reliably, BUT only when the browser presents as mobile (e.g. DevTools emulation). Its page-level JavaScript detects a desktop browser (screen/touch — not the HTTP UA) and **client-side redirects to `soundcloud.com`, dropping the `#t=`**. A `curl -I` shows HTTP 200 for a desktop UA (no *server* redirect), which is misleading — the redirect is in the page JS. So opening `m.soundcloud.com` from the app's real desktop browser is strictly worse (extra redirect, still 0:00). Reverted.
+
+**Dead ends (do not pursue):** fragment/query format changes; cache-bust query param; `m.soundcloud.com` host rewrite (client-side desktop redirect); incognito (`open -na "Google Chrome" --args --incognito`) forces a cold SPA but isn't logged in, so you can't post a comment; AppleScript tab navigation (Automation permission prompt — abandoned, see above). A Chrome `--user-agent` mobile-spoof launch could avoid the redirect but is browser/OS-specific, fragile (ignored when Chrome is already running unless a separate `--user-data-dir` is used), and not worth it.
+
+**Decision:** `OpenCommentInBrowser` left on the desktop host with `#t=%dm%02ds`. Feature is best-effort: reliable on a fresh browser load (and on Windows), unreliable once the desktop SoundCloud SPA is warm. Accepted as an external SoundCloud limitation.
+
 ## Windows icon.ico must be manually regenerated from appicon.png
 
 **Problem:** Wails does NOT auto-generate `build/windows/icon.ico` from `build/appicon.png`. If `appicon.png` is replaced with a new custom icon, the `.ico` stays as the old/default Wails icon until manually regenerated. The Windows `.exe` gets its embedded icon from `icon.ico`, not `appicon.png`.

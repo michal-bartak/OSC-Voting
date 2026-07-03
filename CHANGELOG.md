@@ -11,6 +11,21 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 > as you work; when cutting a release, rename it to the new version + date so the
 > heading matches `VERSION` (e.g. `## [1.1.0] - 2026-07-01`).
 
+## [1.2.0] - 2026-07-03
+
+### Added
+
+- login screen note that sign-in uses your `onesynthchallenge.org` account, with a link to the site.
+- links to the Documentation site, the KVR OSC portal, and the KVR OSC SoundCloud profile.
+
+### Fixed
+
+- Other-track dim/blur no longer stays stuck after opening a comment or switching
+  away from the app.
+- Spacebar reliably toggles play/pause again after returning from the browser
+  (previously it could re-open the last comment).
+- Corrected the OneSynthChallenge link text to `onesynthchallenge.org`.
+
 ## [1.1.0] - 2026-06-19
 
 ### Added

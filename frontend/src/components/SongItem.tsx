@@ -174,6 +174,9 @@ const SongItem = forwardRef<SongItemHandle, Props>(
 
     const handleComment = () => {
       OpenCommentInBrowser(song.soundCloudUrl, Math.round(positionRef.current));
+      // Drop focus off the button so the spacebar shortcut resolves to play/pause
+      // instead of re-activating this button when the window regains focus.
+      (document.activeElement as HTMLElement | null)?.blur();
     };
 
     const embedUrl =
