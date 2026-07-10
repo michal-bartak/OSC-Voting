@@ -255,6 +255,13 @@ export default function VotingPage({ onLogout }: Props) {
       // preventDefault also cancels the native activation of a focused button,
       // so SPACE resolves to play/pause no matter which button holds focus.
       e.preventDefault();
+      // Pressing SPACE switches the browser into keyboard-focus modality, which
+      // would paint a focus ring on whatever button was last clicked with the
+      // mouse (Loop, Next, a vote button, ...). Drop focus off a focused button
+      // so the shortcut never leaves a lingering outline. Tab-based navigation is
+      // unaffected: Tab still focuses the button and shows the ring.
+      const active = document.activeElement as HTMLElement | null;
+      if (active && active.tagName === 'BUTTON') active.blur();
       if (action === 'playFirst')    handlePlayFirst();
       else if (action === 'resume')  handleResume();
       else                           handlePause();
