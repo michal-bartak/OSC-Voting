@@ -6,6 +6,7 @@ import AboutPopup from './AboutPopup';
 import BottomBar from './BottomBar';
 import SettingsPopup from './SettingsPopup';
 import SongItem, { SongItemHandle, PlayerSize } from './SongItem';
+import { resolveSpaceAction } from '../lib/spaceShortcut';
 
 export type SortOrder = 'id' | 'vote-desc' | 'vote-asc' | 'title';
 export type LoopMode = 'none' | 'playlist' | 'song';
@@ -243,17 +244,31 @@ export default function VotingPage({ onLogout }: Props) {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.code !== 'Space') return;
-      const tag = (e.target as HTMLElement).tagName;
-      if (['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT'].includes(tag)) return;
-      if (settingsOpen) return;
+      const action = resolveSpaceAction({
+        target: e.target,
+        settingsOpen,
+        aboutOpen,
+        playingId,
+        isPaused,
+      });
+      if (action === 'none') return;
+      // preventDefault also cancels the native activation of a focused button,
+      // so SPACE resolves to play/pause no matter which button holds focus.
       e.preventDefault();
-      if (!playingId && !isPaused) handlePlayFirst();
-      else if (isPaused)           handleResume();
-      else                         handlePause();
+      // Pressing SPACE switches the browser into keyboard-focus modality, which
+      // would paint a focus ring on whatever button was last clicked with the
+      // mouse (Loop, Next, a vote button, ...). Drop focus off a focused button
+      // so the shortcut never leaves a lingering outline. Tab-based navigation is
+      // unaffected: Tab still focuses the button and shows the ring.
+      const active = document.activeElement as HTMLElement | null;
+      if (active && active.tagName === 'BUTTON') active.blur();
+      if (action === 'playFirst')    handlePlayFirst();
+      else if (action === 'resume')  handleResume();
+      else                           handlePause();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [playingId, isPaused, sortedSongs, settingsOpen]);
+  }, [playingId, isPaused, sortedSongs, settingsOpen, aboutOpen]);
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
