@@ -1,12 +1,20 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { OpenURL } from '../../wailsjs/go/main/App';
+import { main } from '../../wailsjs/go/models';
+
+type CheckStatus = 'idle' | 'checking' | 'done' | 'error';
 
 interface Props {
   version: string;
+  updateInfo: main.UpdateInfo | null;
+  onCheck: () => Promise<main.UpdateInfo | null>;
   onClose: () => void;
 }
 
-export default function AboutPopup({ version, onClose }: Props) {
+export default function AboutPopup({ version, updateInfo, onCheck, onClose }: Props) {
+  const [status, setStatus] = useState<CheckStatus>(updateInfo ? 'done' : 'idle');
+  const [info, setInfo] = useState<main.UpdateInfo | null>(updateInfo);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
@@ -14,6 +22,23 @@ export default function AboutPopup({ version, onClose }: Props) {
   }, [onClose]);
 
   const open = (url: string) => OpenURL(url).catch(() => {});
+
+  const handleCheck = async () => {
+    if (status === 'checking') return;
+    setStatus('checking');
+    // Keep "Checking…" on screen ≥1s: the actual check is near-instant, which would
+    // otherwise read as "nothing happened".
+    const [res] = await Promise.all([
+      onCheck(),
+      new Promise(r => setTimeout(r, 1000)),
+    ]);
+    if (res === null) {
+      setStatus('error');
+      return;
+    }
+    setInfo(res);
+    setStatus('done');
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -26,6 +51,26 @@ export default function AboutPopup({ version, onClose }: Props) {
         <div className="about-hero">
           <span className="about-app-name">OSC Voting</span>
           <span className="about-version">v{version}</span>
+        </div>
+
+        <div className="about-update-row">
+          <span className="about-update-status">
+            {status === 'checking' && 'Checking…'}
+            {status === 'error' && 'Couldn’t check for updates.'}
+            {status === 'done' && info && (
+              info.updateAvailable ? (
+                <>
+                  Update available: <strong>v{info.latestVersion}</strong> —{' '}
+                  <a className="about-link-inline" onClick={() => open(info.releaseURL)}>View release</a>
+                </>
+              ) : (
+                <>You’re up to date (v{info.currentVersion}).</>
+              )
+            )}
+          </span>
+          <button className="about-check-btn" onClick={handleCheck} disabled={status === 'checking'}>
+            Check for updates
+          </button>
         </div>
 
         <p className="about-desc">

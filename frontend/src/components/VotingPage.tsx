@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AppName, AppVersion, GetConfig, GetSongs, Logout, NotifyNearEnd, SaveWindowSize, SubmitVote, UpdateNotificationsEnabled, UpdateNotificationSkipVoted, UpdateNotificationThreshold } from '../../wailsjs/go/main/App';
+import { AppName, AppVersion, CheckForUpdate, GetConfig, GetPendingUpdate, GetSongs, Logout, NotifyNearEnd, SaveWindowSize, SetUpdateSeenVersion, SubmitVote, UpdateNotificationsEnabled, UpdateNotificationSkipVoted, UpdateNotificationThreshold } from '../../wailsjs/go/main/App';
 import { EventsOn, WindowGetSize } from '../../wailsjs/runtime/runtime';
 import { main } from '../../wailsjs/go/models';
 import AboutPopup from './AboutPopup';
 import BottomBar from './BottomBar';
 import SettingsPopup from './SettingsPopup';
+import UpdatePopup from './UpdatePopup';
 import SongItem, { SongItemHandle, PlayerSize } from './SongItem';
 import { resolveSpaceAction } from '../lib/spaceShortcut';
 
@@ -44,6 +45,9 @@ export default function VotingPage({ onLogout }: Props) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [notificationThreshold, setNotificationThreshold] = useState(80);
   const [notificationSkipVoted, setNotificationSkipVoted] = useState(false);
+  const [checkUpdatesOnStart, setCheckUpdatesOnStart] = useState(true);
+  const [updateInfo, setUpdateInfo] = useState<main.UpdateInfo | null>(null);
+  const [updatePopupOpen, setUpdatePopupOpen] = useState(false);
   const [appTitle, setAppTitle] = useState('OSC Voting');
   const [isDark, setIsDark] = useState(
     () => document.documentElement.getAttribute('data-theme') === 'dark'
@@ -100,13 +104,49 @@ export default function VotingPage({ onLogout }: Props) {
         setNotificationsEnabled(cfg.notificationsEnabled ?? true);
         setNotificationThreshold(cfg.notificationThreshold ?? 80);
         setNotificationSkipVoted(cfg.notificationSkipVoted ?? false);
+        setCheckUpdatesOnStart(cfg.checkUpdatesOnStart ?? true);
         if (cfg.autoScrollToUnvoted) {
           setTimeout(() => scrollToFirstUnvoted(state.songs), 150);
+        }
+        if (cfg.checkUpdatesOnStart ?? true) {
+          // Opt-in (default on): check GitHub Releases for a newer version, non-blocking.
+          CheckForUpdate()
+            .then(res => {
+              setUpdateInfo(res);
+              // Pop once per version: skip a version the user already dismissed. The badge
+              // (driven by updateInfo) still shows regardless.
+              if (res.updateAvailable && res.latestVersion !== (cfg.updateSeenVersion ?? '')) {
+                setUpdatePopupOpen(true);
+                SetUpdateSeenVersion(res.latestVersion).catch(() => {});
+              }
+            })
+            .catch(() => {});
+        } else {
+          // Auto-check off: restore the badge from the last persisted result (no network),
+          // so an update found by a previous manual check survives restart.
+          GetPendingUpdate()
+            .then(p => { if (p.updateAvailable) setUpdateInfo(p); })
+            .catch(() => {});
         }
       })
       .catch(err => setError(String(err)))
       .finally(() => setLoading(false));
   }, []);
+
+  // Manual "Check for updates" from the About popup; refreshes the shared result (and badge).
+  const handleCheckForUpdate = async (): Promise<main.UpdateInfo | null> => {
+    try {
+      const res = await CheckForUpdate();
+      setUpdateInfo(res);
+      // Persist so the badge survives restart even when the on-startup check is disabled.
+      if (res.updateAvailable) {
+        SetUpdateSeenVersion(res.latestVersion).catch(() => {});
+      }
+      return res;
+    } catch {
+      return null;
+    }
+  };
 
   const handlePlay = (id: string) => {
     if (playingId && playingId !== id) {
@@ -329,12 +369,17 @@ export default function VotingPage({ onLogout }: Props) {
         </div>
         <div className="header-right">
           <span className="vote-progress">{voted}/{total} voted</span>
-          <button className="settings-btn" onClick={() => setAboutOpen(true)} title="About">
+          <button
+            className="settings-btn about-btn"
+            onClick={() => setAboutOpen(true)}
+            title={updateInfo?.updateAvailable ? `Update available: v${updateInfo.latestVersion}` : 'About'}
+          >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="8" cy="8" r="6.5"/>
               <line x1="8" y1="7" x2="8" y2="11.5"/>
               <circle cx="8" cy="4.5" r="0.75" fill="currentColor" stroke="none"/>
             </svg>
+            {updateInfo?.updateAvailable && <span className="update-badge" />}
           </button>
           <button className="settings-btn" onClick={() => setSettingsOpen(true)} title="Settings">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
@@ -349,7 +394,15 @@ export default function VotingPage({ onLogout }: Props) {
         </div>
       </header>
       {aboutOpen && (
-        <AboutPopup version={appVersion} onClose={() => setAboutOpen(false)} />
+        <AboutPopup
+          version={appVersion}
+          updateInfo={updateInfo}
+          onCheck={handleCheckForUpdate}
+          onClose={() => setAboutOpen(false)}
+        />
+      )}
+      {updatePopupOpen && updateInfo && (
+        <UpdatePopup info={updateInfo} onClose={() => setUpdatePopupOpen(false)} />
       )}
       {settingsOpen && (
         <SettingsPopup
@@ -363,6 +416,7 @@ export default function VotingPage({ onLogout }: Props) {
           initialNotificationsEnabled={notificationsEnabled}
           initialNotificationThreshold={notificationThreshold}
           initialNotificationSkipVoted={notificationSkipVoted}
+          initialCheckUpdatesOnStart={checkUpdatesOnStart}
           onSave={(email, password, theme) => {
             setStoredEmail(email);
             setStoredPassword(password);
@@ -378,6 +432,7 @@ export default function VotingPage({ onLogout }: Props) {
           onNotificationsEnabledChange={(val) => setNotificationsEnabled(val)}
           onNotificationThresholdChange={(val) => setNotificationThreshold(val)}
           onNotificationSkipVotedChange={(val) => setNotificationSkipVoted(val)}
+          onCheckUpdatesOnStartChange={(val) => setCheckUpdatesOnStart(val)}
           onClose={() => setSettingsOpen(false)}
         />
       )}

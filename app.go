@@ -365,6 +365,53 @@ func (a *App) UpdatePlayerSize(size string) error {
 	return a.SaveConfig(*cfg)
 }
 
+// UpdateCheckUpdatesOnStart persists only the checkUpdatesOnStart field.
+func (a *App) UpdateCheckUpdatesOnStart(enabled bool) error {
+	cfg, err := a.GetConfig()
+	if err != nil {
+		return err
+	}
+	cfg.CheckUpdatesOnStart = boolPtr(enabled)
+	return a.SaveConfig(*cfg)
+}
+
+// CheckForUpdate looks up the latest published GitHub Release and compares it against the
+// running version. Best-effort: a repo with no releases reports "up to date"; network errors
+// surface to the caller (the UI reports them without blocking).
+func (a *App) CheckForUpdate() (UpdateInfo, error) {
+	return checkForUpdate(a.ctx, appVersion)
+}
+
+// SetUpdateSeenVersion records the latest release version the user has been made aware of (via
+// the startup popup or a manual About check), so the startup popup isn't shown again for it and
+// the "update available" badge can be restored on the next launch.
+func (a *App) SetUpdateSeenVersion(v string) error {
+	cfg, err := a.GetConfig()
+	if err != nil {
+		return err
+	}
+	cfg.UpdateSeenVersion = v
+	return a.SaveConfig(*cfg)
+}
+
+// GetPendingUpdate returns — without any network call — the update the user was last informed
+// about (persisted updateSeenVersion) if it is still newer than the running version. This drives
+// the "update available" badge across restarts even when the on-startup check is disabled; it
+// naturally reports "not available" once the user upgrades past the seen version.
+func (a *App) GetPendingUpdate() (UpdateInfo, error) {
+	info := UpdateInfo{CurrentVersion: appVersion}
+	cfg, err := a.GetConfig()
+	if err != nil {
+		return info, err
+	}
+	if seen := strings.TrimSpace(cfg.UpdateSeenVersion); seen != "" && compareVersions(seen, appVersion) > 0 {
+		info.LatestVersion = seen
+		info.ReleaseURL = repoURL + "/releases/latest"
+		info.UpdateAvailable = true
+	}
+	return info, nil
+}
+
 func (a *App) OpenCommentInBrowser(trackURL string, positionMs float64) {
 	totalSecs := int(positionMs) / 1000
 	mins := totalSecs / 60

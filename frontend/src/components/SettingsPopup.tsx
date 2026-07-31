@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { GetConfigPath, Login, UpdateAutoScroll, UpdateFollowPlayback, UpdateNotificationsEnabled, UpdateNotificationSkipVoted, UpdateNotificationThreshold, UpdatePlayerSize, UpdateTheme } from '../../wailsjs/go/main/App';
+import { GetConfigPath, Login, UpdateAutoScroll, UpdateCheckUpdatesOnStart, UpdateFollowPlayback, UpdateNotificationsEnabled, UpdateNotificationSkipVoted, UpdateNotificationThreshold, UpdatePlayerSize, UpdateTheme } from '../../wailsjs/go/main/App';
 import { applyTheme } from '../theme';
 
 interface Props {
@@ -13,6 +13,7 @@ interface Props {
   initialNotificationsEnabled?: boolean;
   initialNotificationThreshold?: number;
   initialNotificationSkipVoted?: boolean;
+  initialCheckUpdatesOnStart?: boolean;
   onSave: (email: string, password: string, theme: string) => void;
   onAutoScrollChange?: (val: boolean) => void;
   onFollowPlaybackChange?: (val: boolean) => void;
@@ -20,6 +21,7 @@ interface Props {
   onNotificationsEnabledChange?: (val: boolean) => void;
   onNotificationThresholdChange?: (val: number) => void;
   onNotificationSkipVotedChange?: (val: boolean) => void;
+  onCheckUpdatesOnStartChange?: (val: boolean) => void;
   onClose: () => void;
 }
 
@@ -32,7 +34,7 @@ const THEMES = [
 const SIZE_VALUES = ['minimal', 'medium', 'large'] as const;
 const SIZE_LABELS = ['Minimal', 'Medium', 'Large'];
 
-export default function SettingsPopup({ initialEmail, initialDisplayEmail, initialPassword, initialTheme, initialAutoScroll, initialFollowPlayback, initialPlayerSize, initialNotificationsEnabled = true, initialNotificationThreshold = 80, initialNotificationSkipVoted = false, onSave, onAutoScrollChange, onFollowPlaybackChange, onPlayerSizeChange, onNotificationsEnabledChange, onNotificationThresholdChange, onNotificationSkipVotedChange, onClose }: Props) {
+export default function SettingsPopup({ initialEmail, initialDisplayEmail, initialPassword, initialTheme, initialAutoScroll, initialFollowPlayback, initialPlayerSize, initialNotificationsEnabled = true, initialNotificationThreshold = 80, initialNotificationSkipVoted = false, initialCheckUpdatesOnStart = true, onSave, onAutoScrollChange, onFollowPlaybackChange, onPlayerSizeChange, onNotificationsEnabledChange, onNotificationThresholdChange, onNotificationSkipVotedChange, onCheckUpdatesOnStartChange, onClose }: Props) {
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState(initialPassword);
   const [theme, setTheme] = useState(initialTheme || 'system');
@@ -42,6 +44,7 @@ export default function SettingsPopup({ initialEmail, initialDisplayEmail, initi
   const [notificationsEnabled, setNotificationsEnabled] = useState(initialNotificationsEnabled);
   const [notificationThreshold, setNotificationThreshold] = useState(initialNotificationThreshold);
   const [notificationSkipVoted, setNotificationSkipVoted] = useState(initialNotificationSkipVoted);
+  const [checkUpdatesOnStart, setCheckUpdatesOnStart] = useState(initialCheckUpdatesOnStart);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [configPath, setConfigPath] = useState('');
@@ -85,6 +88,12 @@ export default function SettingsPopup({ initialEmail, initialDisplayEmail, initi
     setFollowPlayback(val);
     UpdateFollowPlayback(val).catch(() => {});
     onFollowPlaybackChange?.(val);
+  };
+
+  const handleCheckUpdatesOnStartToggle = (val: boolean) => {
+    setCheckUpdatesOnStart(val);
+    UpdateCheckUpdatesOnStart(val).catch(() => {});
+    onCheckUpdatesOnStartChange?.(val);
   };
 
   const handlePlayerSizeChange = (idx: number) => {
@@ -200,6 +209,15 @@ export default function SettingsPopup({ initialEmail, initialDisplayEmail, initi
               onChange={e => handleFollowPlaybackToggle(e.target.checked)}
             />
             <span>Follow playback</span>
+          </label>
+          <label className="settings-toggle">
+            <input
+              type="checkbox"
+              className="settings-toggle-checkbox"
+              checked={checkUpdatesOnStart}
+              onChange={e => handleCheckUpdatesOnStartToggle(e.target.checked)}
+            />
+            <span>Check for updates on startup</span>
           </label>
         </div>
 

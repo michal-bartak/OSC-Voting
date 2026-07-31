@@ -29,7 +29,7 @@ func loadConfig() (*Config, error) {
 func (a *App) GetConfig() (*Config, error) {
 	data, err := os.ReadFile(appConfigFilePath())
 	if os.IsNotExist(err) {
-		return &Config{AutoScrollToUnvoted: boolPtr(true), FollowPlayback: boolPtr(true)}, nil
+		return &Config{AutoScrollToUnvoted: boolPtr(true), FollowPlayback: boolPtr(true), CheckUpdatesOnStart: boolPtr(true)}, nil
 	}
 	if err != nil {
 		return nil, err
@@ -52,6 +52,9 @@ func (a *App) GetConfig() (*Config, error) {
 	}
 	if cfg.NotificationSkipVoted == nil {
 		cfg.NotificationSkipVoted = boolPtr(false)
+	}
+	if cfg.CheckUpdatesOnStart == nil {
+		cfg.CheckUpdatesOnStart = boolPtr(true)
 	}
 	return &cfg, nil
 }

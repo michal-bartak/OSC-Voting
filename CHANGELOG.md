@@ -11,6 +11,19 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 > as you work; when cutting a release, rename it to the new version + date so the
 > heading matches `VERSION` (e.g. `## [1.1.0] - 2026-07-01`).
 
+## [1.3.0] - 2026-07-31
+
+### Added
+
+- **Check for updates** — a button in the About dialog, plus an optional on-startup
+  check (on by default). Popup shows only once. per version. New version indicated by a badge on about button.
+
+### Fixed
+
+- Spacebar always toggles play/pause, even when a button (Next, a vote button, …) is focused.
+- focus ring on a clicked elements only for keyboard navigation
+- focus ring not left when app looses focus (ie opening comments)
+
 ## [1.2.0] - 2026-07-03
 
 ### Added

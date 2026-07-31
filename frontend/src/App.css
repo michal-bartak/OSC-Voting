@@ -285,6 +285,93 @@ body { background: var(--bg-base); margin: 0; user-select: none; -webkit-user-se
   margin: 0 0 18px;
 }
 .about-desc strong { color: var(--text-primary); }
+
+/* ── Update check (About row) ───────────────────────────── */
+.about-update-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: -4px 0 18px;
+  min-height: 26px;
+}
+.about-update-status {
+  font-size: 12px;
+  color: var(--text-muted);
+  flex: 1;
+}
+.about-update-status strong { color: var(--text-primary); }
+.about-link-inline {
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: none;
+}
+.about-link-inline:hover { text-decoration: underline; }
+.about-check-btn {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 6px 10px;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s;
+}
+.about-check-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.about-check-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Badge on the header About button when an update is available */
+.about-btn { position: relative; }
+.update-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 1px solid var(--bg-card);
+}
+
+/* ── Update available popup ─────────────────────────────── */
+.update-card { width: 340px; }
+.update-message {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0 0 20px;
+}
+.update-message strong { color: var(--text-primary); }
+.update-actions {
+  display: flex;
+  gap: 8px;
+}
+.update-view-btn {
+  flex: 2;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 10px;
+  transition: opacity 0.15s;
+}
+.update-view-btn:hover { opacity: 0.9; }
+.update-dismiss-btn {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 10px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.update-dismiss-btn:hover { border-color: var(--border-hover); color: var(--text-secondary); }
+
 .about-links {
   display: flex;
   flex-direction: column;
